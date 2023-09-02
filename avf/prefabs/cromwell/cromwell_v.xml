@@ -1,0 +1,241 @@
+<prefab version="0.9.3">
+	<group id_="599756544" open_="true" name="instance=MOD/avf/prefabs/cromwell/cromwell_v.xml" pos="2.4 0.3 -6.2" rot="0.0 0.0 0.0">
+		<group id_="943710464" open_="true" name="Cromwell_V" pos="0.5 -0.1 0.0" rot="0.0 -90.0 0.0" prop0="texture=7 0.1">
+			<script id_="1857469184" open_="true" pos="0.0 0.0 0.0" file="MOD/avf/scripts/Immersive_Tank.lua">
+				<script id_="492074304" open_="true" pos="0.0 0.0 0.0" file="MOD/avf/prefabs/cromwell/cromwell_V.lua">
+					<vehicle id_="1118243456" open_="true" name="Cromwell_v" tags="cfg=vehicle name=Cromwell_v AVF_Custom" pos="0.1 1.1 1.3" rot="0.0 0.0 0.0" sound="tank2 1.0" spring="1" damping="1" topspeed="80" acceleration="0.7" strength="0.4" difflock="1">
+						<body id_="160507456" open_="true" name="Cromwell_v" tags="component=body" pos="0.0 -1.2 0.0" rot="0.0 180.0 0.0" dynamic="true">
+							<vox id_="1893647232" open_="true" name="Hull" tags="component=chassis RHA=12.7" pos="0.0 0.6 0.4" density="60" strength="10" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="body">
+								<group id_="1093993728" name="hull_parts">
+									<vox id_="1986582912" name="side_l" tags="RHA=12.7" pos="1.2 0.0 0.1" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="hull_left"/>
+									<vox id_="973858880" name="side_r" tags="nocull RHA=12.7" pos="-1.2 0.0 0.1" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="hull_right"/>
+									<vox id_="50531340" tags="nocull RHA=67" pos="0.0 0.9 2.5" rot="0.0 0.0 0.0" density="5" strength="2" prop="false" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="front_hull"/>
+								</group>
+								<group id_="1794878464" name="applique_lower glacis" pos="0.0 0.04 2.55" rot="-20 0 0">
+									<voxbox id_="13239080" name="applique" tags="RHA=25" pos="-0.9 0.1 -0.386" rot="0.0 0.0 0.0" size="19 1 9" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="lower_slope_panel"/>
+								</group>
+								<vox id_="1099236864" name="flammable_area" tags="flammable_area" pos="0.0 0.1 -1.3" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area"/>
+								<vox id_="990178304" name="Engine" tags="engine" pos="-0.00001 0.1 -1.1" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="engine"/>
+								<vox id_="350639008" name="transmission" tags="engine" pos="0.0 0.1 -2.1" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="transmission"/>
+								<vox id_="130948920" name="radiator" tags="engine" pos="-0.5 0.1 -1.8" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="radiator_r"/>
+								<vox id_="1919011200" name="radiator" tags="engine" pos="0.6 0.1 -1.8" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="radiator_l"/>
+								<vox id_="1509713920" name="air_pump" tags="engine" pos="-0.4 0.1 -0.7" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="air_compressor_r"/>
+								<vox id_="430401184" name="air_pump" tags="engine" pos="0.4 0.1 -0.7" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="air_compressor_l"/>
+								<vox id_="1910097792" name="fuel_tank" tags="fuel_tank" pos="-0.6 0.1 -1.1" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="fuel_tank_r"/>
+								<vox id_="1939656320" name="fuel_tank" tags="fuel_tank" pos="0.7 0.1 -1.1" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="fuel_tank_l"/>
+								<vox id_="528449024" name="engine_pipes" pos="-0.0 0.6 -1.79998" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="engine_pipes"/>
+								<voxbox id_="1471897344" name="engine_flammable" pos="-0.3 0.6 -1.59999" rot="0.0 0.0 0.0" size="2 1 11" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="1291924480" name="engine_flammable" pos="0.2 0.6 -1.59996" rot="0.0 0.0 0.0" size="2 1 11" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="1581086976" name="engine_flammable" pos="-0.4 0.7 -1.59999" rot="0.0 0.0 0.0" size="9 1 5" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="915331648" name="engine_flammable" pos="-0.90001 0.9 -2.5" rot="0.0 0.0 0.0" size="4 1 21" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="737718272" name="engine_flammable" pos="-0.49999 0.9 -0.9" rot="0.0 0.0 0.0" size="11 1 5" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="692954432" name="engine_flammable" pos="0.59999 0.9 -2.49998" rot="0.0 0.0 0.0" size="4 1 21" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="1317091840" name="engine_flammable" pos="-0.40001 0.7 -0.89999" rot="0.0 0.0 0.0" size="9 1 4" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="629380608" name="hull_flammable" pos="-0.80003 0.3 1.5" rot="0.0 0.0 0.0" size="1 6 8" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="840484992" name="hull_flammable" pos="0.79997 0.3 1.49998" rot="0.0 0.0 0.0" size="1 6 8" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="1730845824" name="hull_flammable" pos="0.09997 0.3 1.49999" rot="0.0 0.0 0.0" size="1 6 8" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="1215963648" name="hull_flammable" pos="-0.10003 0.3 1.49999" rot="0.0 0.0 0.0" size="1 6 8" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="808632512" name="hull_flammable" pos="-0.10003 0.3 1.49999" rot="0.0 -90.0 0.0" size="1 6 6" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<voxbox id_="1853340160" name="hull_flammable" pos="0.79997 0.3 1.5" rot="0.0 -90.0 0.0" size="1 6 6" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								<group id_="1242704000" open_="true" name="Ammo" pos="-0.50005 0.2 0.5">
+									<group id_="1608351616" open_="true" name="ammo_racks" pos="0.5 -0.1 0.0" prop0="tags=ammo_rack=0.2">
+										<group id_="1806610048" open_="true" name="left" pos="0.6 0.0 0.1" rot="0 180 0">
+											<vox id_="1362904320" name="ammo_rack" pos="-0.2 0.1 -0.4" rot="0.0 90.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+											<vox id_="1982912640" name="ammo_rack" pos="0.1 0.1 -0.8" rot="0.0 180.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+											<vox id_="1378437248" name="ammo_rack" pos="-0.3 0.1 0.5" rot="0.0 -90.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+											<vox id_="985066176" name="ammo_rack" pos="0.1 0.1 0.8" rot="0.0 180.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+										</group>
+										<group id_="1341997056" open_="true" name="right" pos="-0.5 0.0 0.0">
+											<vox id_="540311744" name="ammo_rack" pos="0.1 0.1 0.8" rot="0.0 180.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+											<vox id_="1158878336" name="ammo_rack" pos="-0.2 0.1 -0.4" rot="0.0 90.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+											<vox id_="596741696" name="ammo_rack" pos="0.1 0.1 -0.8" rot="0.0 180.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+											<vox id_="934993664" name="ammo_rack" pos="-0.3 0.1 0.5" rot="0.0 -90.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+										</group>
+										<group id_="1736547840" open_="true" name="floor" pos="0.0 0.0 0.2" rot="0 90 90">
+											<vox id_="1641908096" name="ammo_rack" pos="0.2 -0.3 -0.4" rot="0.0 90.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+											<vox id_="712026560" name="ammo_rack" pos="0.1 -0.3 0.5" rot="0.0 -90.0 0.0" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="ammo_rack"/>
+										</group>
+									</group>
+									<voxbox id_="886231872" name="engine_flammable" pos="0.8 -0.0 -0.59999" rot="0.0 0.0 0.0" size="4 1 4" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+									<voxbox id_="1872543360" name="engine_flammable" pos="-0.2 0.0 -0.59999" rot="0.0 0.0 0.0" size="4 1 4" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+									<voxbox id_="915987072" name="engine_flammable" pos="0.35 0.0 0.2" rot="0.0 0.0 0.0" size="4 1 4" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+									<voxbox id_="1669697024" name="engine_flammable" pos="0.35002 0.0 0.8" rot="0.0 0.0 0.0" size="4 7 1" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+									<voxbox id_="1598455040" name="engine_flammable" pos="0.35005 0.0 -0.8" rot="0.0 0.0 0.0" size="4 7 1" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+									<voxbox id_="199700384" name="engine_flammable" pos="1.28036 0.0 0.26618" rot="0.0 90.0 0.0" size="4 7 1" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+									<voxbox id_="1878966272" name="engine_flammable" pos="-0.3 0.0 0.266" rot="0.0 90.0 0.0" size="4 7 1" brush="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="engine_flammable_area" offset="0 1 0"/>
+								</group>
+								<light id_="1756930816" pos="0.1 1.25 2.15" rot="30.0 -90.0 0.0" type="area" color="0.98 0.95 0.79" scale="0.30" penumbra="1" size="0.1 0.1"/>
+								<light id_="650550016" pos="0.2 1.25 2.15" rot="30.0 90.0 0.0" type="area" color="0.98 0.95 0.79" scale="0.30" penumbra="1" size="0.1 0.1"/>
+								<light id_="1851242880" pos="0.05 1.35 2.7" rot="0" type="cone" color="0.98 0.95 0.79" scale="1" penumbra="1" size="0.1 0.1" reach="5"/>
+								<vox id_="1663077504" name="chassis_top" tags="nocull RHA=20" pos="-0.0 1.2 -0.2" density="1.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="tank_chassis_upper_top"/>
+								<vox id_="1883685120" name="applique" tags="RHA=57" pos="0.0 0.34 3.0" file="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="nose_applique"/>
+								<group id_="1552118272" name="applique" pos="0.0 0.59 2.6" rot="25 0 0">
+									<vox id_="438986912" name="applique" tags="RHA=25" pos="0.0 0.1 0.0" file="MOD/avf/prefabs/cromwell/cromwell_V.vox" object="front_slope_panel"/>
+								</group>
+								<group id_="2036131200" name="hatches" pos="0.1 0.9 2.1" prop0="rotspring=0">
+									<vox id_="1904526848" name="Hatch" tags="nocull" pos="-0.69998 0.3 -0.1" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="driver_hatch_large">
+										<joint id_="1921632768" pos="-0.2 0.1 0.0" rot="0.0 0.0 0.0" type="hinge" limits="0 150"/>
+									</vox>
+									<vox id_="1394297984" name="Hatch" tags="nocull RHA=50" pos="-0.6 0.0 0.5" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="front_hatch">
+										<joint id_="523730144" pos="-0.2 0.1 -0.1" rot="90.0 0.0 0.0" type="hinge" limits="0 105"/>
+									</vox>
+									<vox id_="404578432" name="Hatch" tags="nocull" pos="-0.4 0.3 -0.10001" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="driver_hatch_small">
+										<joint id_="58854920" pos="0.2 0.1 0.0" rot="0.0 180.0 0.0" type="hinge" limits="0 150"/>
+									</vox>
+									<vox id_="319048704" name="Hatch" tags="nocull" pos="0.8 0.2 -0.1" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="side_crew_hatch_large">
+										<joint id_="1233266176" pos="0.2 0.1 0.3" rot="90.0 90.0 0.0" type="hinge" rotspring="0" limits="0 135"/>
+										<joint id_="2066017408" tags="break_joint=0.8" pos="-0.1 0.2 -0.2" collide="false"/>
+									</vox>
+								</group>
+								<group id_="1088881536" name="engine" pos="0.1 1.1 -3.6" prop0="rotspring=0">
+									<vox id_="1423856512" name="engine_hatch" tags="nocull" pos="-0.1 0.1 2.3" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="flip_hatch_upper">
+										<joint id_="177875552" pos="0.05 0.1 0.2" rot="0.0 90.0 0.0" type="hinge" limits="0 150"/>
+									</vox>
+									<vox id_="1537437312" name="engine_hatch" tags="nocull" pos="-0.1 0.1 1.8" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="flip_hatch_Center">
+										<joint id_="397958880" pos="0.05 0.1 -0.3" rot="0.0 -90.0 0.0" type="hinge" limits="0 150"/>
+									</vox>
+									<group id_="431122112" name="pop_hatchs" pos="-0.1 0.0 1.6" prop0="tags=break_joint=0.75" prop1="collide=true">
+										<vox id_="1175066624" name="engine_hatch" tags="nocull" pos="0.60001 0.1 0.0" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="pop_hatch_l">
+											<joint id_="495089152" pos="0.30001 0.1 -0.50001"/>
+											<joint id_="2086990208" pos="-0.19999 0.1 -0.49997"/>
+											<joint id_="1499620736" pos="-0.19995 0.1 0.50003"/>
+											<joint id_="815907456" pos="0.30005 0.1 0.49999"/>
+										</vox>
+										<vox id_="1918028160" name="engine_hatch" tags="nocull" pos="-0.6 0.1 0.0" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="pop_hatch_r">
+											<joint id_="1026356416" pos="0.30001 0.1 -0.50001"/>
+											<joint id_="1634633088" pos="-0.19999 0.1 -0.49997"/>
+											<joint id_="2003033472" pos="-0.19995 0.1 0.50003"/>
+											<joint id_="969598784" pos="0.30005 0.1 0.49999"/>
+										</vox>
+									</group>
+								</group>
+							</vox>
+							<group id_="747024896" open_="true" name="Turret" pos="-1.1 0.9 1.8">
+								<vox id_="531267232" open_="true" name="Turret" tags="nocull component=turret turretGroup=mainTurret smokeLauncher=t90_smoke_turret group=smoke RHA=12.7" pos="1.1 0.1 -1.0" rot="0.0 0.0 0.0" density="15" strength="10" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="turret_stripped">
+									<joint id_="592547136" tags="component=turretJoint" pos="0.05 0.0 -0.05" rot="90.0 0.0 0.0" type="hinge" rotstrength="0.9" rotspring="0"/>
+									<vox id_="525827424" name="75mm qf gun" tags="nocull component=gun weaponType=customcannon cm KwK Cannon group=primary mainCannon coax=COAXMG commander" pos="0.0 1.0 1.6" texture="1 0.40" density="10" strength="10" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="gun_breach">
+										<vox id_="78254760" tags="nocull" pos="-0.12501 0.175 0.4" texture="1 0.35" density="5" strength="2" prop="false" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="tank_gun_barrel">
+											<vox id_="543064448" tags="nocull" pos="0.05 0.0 0.0" texture="1 0.35" density="5" strength="2" prop="false" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="tank_gun_barrel"/>
+											<vox id_="927718720" tags="nocull" pos="0.05 0.05 0.0" rot="0.0 0.0 0.0" texture="1 0.35" density="5" strength="2" prop="false" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="tank_gun_barrel"/>
+											<vox id_="1288975232" tags="nocull" pos="0.0 0.05 0.0" rot="0.0 0.0 0.0" texture="1 0.35" density="5" strength="2" prop="false" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="tank_gun_barrel"/>
+										</vox>
+										<joint id_="1946275840" tags="component=gunJoint" pos="0.3 0.2 -0.80003" rot="0.0 90.0 0.0" type="hinge" rotstrength="0.9" rotspring="0" limits="-16 8"/>
+									</vox>
+									<light id_="588745792" pos="0.9 1.7 0.0" rot="50.0 -90.0 0.0" type="area" color="0.98 0.95 0.79" scale="0.3" penumbra="1" size="0.1 0.1"/>
+									<vox id_="1495229568" tags="nocull RHA=100" pos="0.0 0.9 1.0" rot="0.0 0.0 0.0" density="5" strength="2" prop="false" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="turret_applique_2"/>
+									<group id_="76550720" open_="true" pos="-0.75 0.7 0.497" rot="0.0 0.0 0.0">
+										<voxagon id_="170535072" name="turret_welded_plate" tags="nocull RHA=63" pos="0.0 0.0 0.023" rot="90.0 99.0 0.0" brush="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="welded_panel" offset="0 -1 0" axis="x" extrude="1">
+											<vertex pos="-0.4 -0.8"/>
+											<vertex pos="-0.2 -0.8"/>
+											<vertex pos="0.9 -1.0"/>
+											<vertex pos="0.9 -0.2"/>
+											<vertex pos="-0.4 -0.2"/>
+										</voxagon>
+									</group>
+									<voxagon id_="1166611968" name="turret_welded_plate" tags="nocull RHA=12.7" pos="-0.132 0.8 -1.048" rot="90.0 .0 0.0" brush="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="welded_panel" offset="0 1 0" axis="x" extrude="1">
+										<vertex pos="-0.5 -0.9"/>
+										<vertex pos="0.9 -0.9"/>
+										<vertex pos="0.9 -0.1"/>
+										<vertex pos="-0.5 -0.1"/>
+									</voxagon>
+									<voxagon id_="1442797568" name="turret_welded_plate" tags="nocull RHA=63" pos="-0.75 0.8 -0.75" rot="90.0 70.0 0.0" brush="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="welded_panel" offset="0 -1 2" axis="x" extrude="1">
+										<vertex pos="-0.4 -0.9"/>
+										<vertex pos="-0.2 -0.9"/>
+										<vertex pos="0.0 -0.9"/>
+										<vertex pos="0.3 -0.9"/>
+										<vertex pos="0.3 -0.1"/>
+										<vertex pos="-0.4 -0.1"/>
+									</voxagon>
+									<voxagon id_="998174208" name="turret_welded_plate" tags="nocull RHA=63" pos="0.937 0.8 0.062" rot="90.0 -100.0 0.0" brush="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="welded_panel" offset="0 -1 0" axis="x" extrude="1">
+										<vertex pos="-0.4 -0.9"/>
+										<vertex pos="-0.2 -0.9"/>
+										<vertex pos="0.8 -0.7"/>
+										<vertex pos="0.9 -0.7"/>
+										<vertex pos="0.9 -0.1"/>
+										<vertex pos="-0.4 -0.1"/>
+									</voxagon>
+									<voxagon id_="1151341184" name="turret_welded_plate" tags="nocull RHA=63" pos="0.783 0.8 -0.642" rot="90.0 110.0 0.0" brush="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="welded_panel" offset="0 -1 1" axis="x" extrude="1">
+										<vertex pos="-0.4 -0.9"/>
+										<vertex pos="0.4 -0.9"/>
+										<vertex pos="0.4 -0.1"/>
+										<vertex pos="-0.4 -0.1"/>
+									</voxagon>
+								</vox>
+								<group id_="1101596288" open_="true" name="hatches" prop0="rotspring=0">
+									<vox id_="1763550336" open_="true" name="Hatch" tags="nocull" pos="0.7 1.7 -1.2" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="loader_hatch_2">
+										<joint id_="1076101248" pos="0.05 0.1 0.1" rot="0.0 90.0 0.0" type="hinge" limits="0 150"/>
+									</vox>
+									<vox id_="1015149056" open_="true" name="Hatch" tags="nocull" pos="0.7 1.7 -1.4" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="loader_hatch_1">
+										<joint id_="517110592" pos="0.05 0.1 -0.1" rot="0.0 -90.0 0.0" type="hinge" limits="0 150"/>
+									</vox>
+									<vox id_="839501888" open_="true" name="Hatch" tags="nocull" pos="1.6 1.7 -1.4" rot="0.0 180.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="gunner_hatch_1">
+										<joint id_="1019671296" pos="0.05 0.1 0.1" rot="0.0 90.0 0.0" type="hinge" limits="0 150"/>
+									</vox>
+									<vox id_="1714657536" open_="true" name="Hatch" tags="nocull" pos="1.5 1.7 -1.2" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="gunner_hatch_2">
+										<joint id_="1540976512" pos="0.05 0.1 0.1" rot="0.0 90.0 0.0" type="hinge" limits="0 150"/>
+									</vox>
+								</group>
+							</group>
+							<group id_="49220540" name="Other" pos="0.6 1.5 2.3">
+								<location id_="1000664704" tags="player" pos="-0.85 0.15 0.00001" rot="0.0 180.0 0.0"/>
+								<location id_="927587648" tags="vital" pos="-0.55 -0.15 -3.85" rot="0.0 180.0 0.0"/>
+								<location id_="1530883328" name="exhaust" tags="exhaust" pos="-0.95 0.25 -4.75" rot="-90.0 -180.0 0.0"/>
+								<location id_="1378306176" name="exhaust" tags="exhaust" pos="-0.15 0.25 -4.75" rot="-90.0 0.0 0.0"/>
+							</group>
+							<group id_="895800704" open_="true" name="running_gear" pos="0.0 0.15 0.3">
+								<vox id_="248068896" name="Left Track" tags="nocull tracks" pos="1.2 0.1 0.1" collide="false" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="track_final_spiked"/>
+								<vox id_="1472028416" name="Right Track" tags="nocull tracks" pos="-1.2 0.1 0.1" rot="0.0 0.0 0.0" collide="false" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="track_final_spiked"/>
+								<group id_="394223104" name="Left_wheels" pos="1.15 0.1 -0.1">
+									<wheel id_="47319880" name="L-Wheel1" pos="0.0 0.5 2.1" rot="0.0 180.0 0.0" drive="1" steer="0.25" travel="-0.1 0.1">
+										<vox id_="297092832" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whl1"/>
+									</wheel>
+									<wheel id_="1080885632" name="L-Wheel2" pos="0.0 0.5 1.35" rot="0.0 180.0 0.0" drive="1" steer="0.25" travel="-0.1 0.1">
+										<vox id_="2019090816" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whl2"/>
+									</wheel>
+									<wheel id_="1104480128" name="L-Wheel3" pos="0.0 0.5 0.5" rot="0.0 180.0 0.0" drive="1" steer="0.15" travel="-0.1 0.1">
+										<vox id_="424830272" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whl3"/>
+									</wheel>
+									<wheel id_="535265184" name="L-Wheel4" pos="0.0 0.5 -0.45" rot="0.0 180.0 0.0" drive="1" steer="0.15" travel="-0.1 0.1">
+										<vox id_="707307648" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whl4"/>
+									</wheel>
+									<wheel id_="567445312" name="L-Wheel5" pos="0.0 0.5 -1.5" rot="0.0 180.0 0.0" drive="1" steer="-0.15" travel="-0.1 0.1">
+										<vox id_="1715706112" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whl5"/>
+									</wheel>
+									<vox id_="1736220160" tags="nocull" pos="0.10001 0.41 2.8" rot="0.0 .0 0.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="sprocketL1" scale="1"/>
+									<vox id_="1867037952" pos="0.05 0.35 -2.3" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="sprocketL2" scale="0.98"/>
+								</group>
+								<group id_="1120144128" name="Right_wheels" pos="-1.15 0.1 -0.1">
+									<vox id_="1889911424" tags="nocull" pos="-0.0 0.41 2.79999" rot="0.0 .0 0.0" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="sprockectR1" scale="1"/>
+									<vox id_="1950077184" pos="-0.05 0.35 -2.4" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="sprocketR2" scale="0.98"/>
+									<wheel id_="485258176" name="L-Wheel1" pos="0.0 0.5 2.1" rot="0.0 180.0 0.0" drive="1" steer="0.25" travel="-0.1 0.1">
+										<vox id_="671195136" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whr1"/>
+									</wheel>
+									<wheel id_="1638303360" name="L-Wheel2" pos="0.0 0.5 1.35" rot="0.0 180.0 0.0" drive="1" steer="0.25" travel="-0.1 0.1">
+										<vox id_="1921436160" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whr2"/>
+									</wheel>
+									<wheel id_="1529703552" name="L-Wheel3" pos="0.0 0.5 0.5" rot="0.0 180.0 0.0" drive="1" steer="0.15" travel="-0.1 0.1">
+										<vox id_="290538816" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whr3"/>
+									</wheel>
+									<wheel id_="415785760" name="L-Wheel4" pos="0.0 0.5 -0.45" rot="0.0 180.0 0.0" drive="1" steer="0.15" travel="-0.1 0.1">
+										<vox id_="1445025920" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whr4"/>
+									</wheel>
+									<wheel id_="1854650880" name="L-Wheel5" pos="0.0 0.5 -1.5" rot="0.0 180.0 0.0" drive="1" steer="-0.15" travel="-0.1 0.1">
+										<vox id_="283460512" pos="0.0 -0.45 -0.05" rot="0.0 -180.0 0.0" texture="1 0.35" file="MOD/avf/Prefabs/cromwell/cromwell_V.vox" object="whr3"/>
+									</wheel>
+								</group>
+							</group>
+						</body>
+					</vehicle>
+					<location id_="171256016" name="hull_mg_emitter" tags="hull_mg_emitter" pos="-0.46474 1.65 -1.86051"/>
+					<location id_="654482432" name="cook_off" tags="cook_off" pos="0.05 1.17 0.5" rot="0 90  0"/>
+					<location id_="831571520" name="blow_out" tags="blow_out" pos="-0.52987 2.17 0.57093" rot="0 90  0"/>
+					<location id_="930143680" name="blow_out" tags="blow_out" pos="0.57013 2.17 0.57093" rot="0 90  0"/>
+					<location id_="407003392" name="mainCannon_emitter" tags="mainCannon_emitter" pos="0.15 2.15 -3.119"/>
+					<location id_="1110182016" name="mainCannon_coax_emitter" tags="mainCannon_coax_emitter" pos="-0.07908 2.15 -0.92014"/>
+					<location id_="1389710208" name="mainCannon_sight" tags="mainCannon_sight" pos="0.46409 2.75 -0.13974"/>
+				</script>
+			</script>
+		</group>
+	</group>
+</prefab>
+

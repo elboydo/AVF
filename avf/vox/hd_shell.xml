@@ -1,0 +1,8 @@
+<prefab version="0.9.5">
+	<group id_="1555788544" open_="true" pos="-162.60001 3.3 -31.4">
+		<vox id_="1283994112" open_="true" pos="0.0 0.07 0.1" prop="true" file="MOD/avf/vox/shell_casings.vox" object="holder">
+			<vox id_="858246272" pos="0.04 -0.04 -0.04" file="MOD/avf/vox/shell_casings.vox" object="hd_casing" scale=".1]"/>
+		</vox>
+	</group>
+</prefab>
+

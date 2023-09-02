@@ -1,0 +1,132 @@
+<prefab version="0.9.2">
+	<group id_="2123364864" open_="true" name="instance=MOD/avf/prefabs/tiger_131.xml" pos="-158.10001 8.1 -10.3" rot="0.0 -90.0 0.0">
+		<script id_="1591769984" open_="true" pos="0.0 0.0 0.0" file="MOD/avf/scripts/Immersive_Tank.lua">
+			<script id_="671719488" open_="true" pos="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger131.lua">
+				<vehicle id_="930471360" open_="true" name="Tiger 131" tags="cfg=vehicle name=Tiger131" pos="0.1 1.1 1.3" rot="0.0 0.0 0.0" sound="tank2 1.0" spring="1" damping="1" topspeed="42" acceleration="0.20" strength="4" antispin="1" antiroll="1" difflock="1" steerassist="0" friction="4">
+					<body id_="78516920" open_="true" name="Tiger 131" tags="component=body" pos="0.0 -1.2 0.0" rot="0.0 180.0 0.0" dynamic="true">
+						<vox id_="281887552" open_="true" name="Hull" tags="component=chassis" pos="0.0 0.6 0.4" density="8" strength="10" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="body">
+							<vox id_="625841472" name="Engine" pos="0.0 0.2 -2.0" density="1.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="engine"/>
+							<group id_="745255360" open_="true" name="Skirting" tags="nocull" pos="0.0 0.7 -0.4">
+								<vox id_="1360479360" tags="nocull" pos="-1.64 0.1 0.31" rot="-1.7 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="rightside_skirts"/>
+								<vox id_="1182996992" tags="nocull" pos="1.64 0.1 0.31" rot="-1.7" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="leftside_skirts"/>
+								<vox id_="1404587776" tags="nocull" pos="1.4 -0.15 -2.55" rot="-55.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="leftrear_skirt"/>
+								<vox id_="1025569920" tags="nocull" pos="-1.4 -0.15 -2.55" rot="-55.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="rightrear_skirt"/>
+							</group>
+							<vox id_="1784719744" name="Driver's hatch" tags="nucull" pos="1.0 1.2 2.0" strength="5" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="drivers_hatch">
+								<joint id_="1981274240" pos="0.3 0.2 0.0" rot="0.0 180.0 0.0" type="hinge" rotstrength="0.01" rotspring="0" limits="0 105"/>
+							</vox>
+							<vox id_="1354711808" open_="true" name="Machine gunners hatch" tags="nucull" pos="-1.0 1.2 2.0" strength="5" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="machine_gunners_hatch">
+								<joint id_="1587444352" pos="-0.2 0.2 0.0" rot="0.0 0.0 0.0" type="hinge" rotstrength="0.01" rotspring="0" limits="0 105"/>
+							</vox>
+							<vox id_="1187322624" open_="true" name="Engine hatch" tags="nucull" pos="0.0 1.3 -1.8" rot="0.0 0.0 0.0" density="3" strength="5" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="engine_hatch">
+								<joint id_="1762108416" pos="0.05 0.07 -0.7" rot="0.0 -90.0 0.0" type="hinge" rotstrength="0.01" rotspring="0" limits="0 110"/>
+							</vox>
+							<vox id_="1281569152" open_="true" name="MG34" tags="nocull nocull component=gun weaponType=COAXMG group=secondary hull_mg" pos="-0.5 1.0 2.45" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="front_mg">
+								<joint id_="968419072" tags="component=gunJoint" pos="-0.05 0.1 0.15" rot="00.0 -90.0 0.0" type="hinge" rotstrength="0.01" rotspring="0" limits="-10 10"/>
+							</vox>
+							<vox id_="86840496" name="ammo_rack" tags="ammo_rack=0.2" pos="1.2 0.9 -0.4" density="1.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="ammo_rack_hull"/>
+							<vox id_="1992416000" name="ammo_rack" tags="ammo_rack=0.2" pos="1.3 0.9 0.6" rot="0.0 180.0 0.0" density="1.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="ammo_rack_hull"/>
+							<vox id_="163522304" name="ammo_rack" tags="ammo_rack=0.2" pos="-1.2 0.9 -0.4" density="1.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="ammo_rack_hull"/>
+							<vox id_="2003033472" name="ammo_rack" tags="ammo_rack=0.2" pos="-1.1 0.9 0.6" rot="0.0 180.0 0.0" density="1.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="ammo_rack_hull"/>
+						</vox>
+						<group id_="808960192" open_="true" name="Turret" pos="0.0 1.0 2.1">
+							<vox id_="988736448" open_="true" name="Turret" tags="nocull component=turret turretGroup=mainTurret smokeLauncher=t90_smoke_turret group=smoke" pos="0.0 0.1 -1.7" rot="0.0 0.0 0.0" density="5" strength="10" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="turret">
+								<joint id_="1378961664" tags="component=turretJoint" pos="0.05 0.0 0.1" rot="90.0 0.0 0.0" type="hinge" rotstrength="0.9" rotspring="0"/>
+								<vox id_="771864576" open_="true" name="8.8cm KWK Gun" tags="nocull component=gun weaponType=customcannon cm KwK Cannon group=primary mainCannon coax=COAXMG" pos="0.0 1.1 2.2" density="5" strength="10" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gun/breach">
+									<vox id_="959964352" tags="nocull" pos="0.05 0.15 0.7" density="5" strength="5" prop="false" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gun_barrel"/>
+									<vox id_="1200955008" open_="true" tags="nocull" pos="-0.025 0.175 1.9" density="5" strength="2" prop="false" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gun_barrel2">
+										<vox id_="1292448768" tags="nocull" pos="0.05 0.0 0.0" density="5" strength="2" prop="false" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gun_barrel2"/>
+										<vox id_="980675008" tags="nocull" pos="0.05 0.05 0.0" rot="0.0 0.0 0.0" density="5" strength="2" prop="false" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gun_barrel2"/>
+										<vox id_="256851264" tags="nocull" pos="0.0 0.05 0.0" rot="0.0 0.0 0.0" density="5" strength="2" prop="false" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gun_barrel2"/>
+									</vox>
+									<joint id_="2003557760" tags="component=gunJoint" pos="-0.8 0.2 -0.7" rot="0.0 90.0 0.0" type="hinge" rotstrength="0.5" rotspring="0" limits="-8 16"/>
+								</vox>
+								<light id_="869453632" pos="0.9 1.7 0.0" rot="50.0 -90.0 0.0" type="area" color="0.98 0.95 0.79" scale="0.3" penumbra="1" size="0.1 0.1"/>
+							</vox>
+							<vox id_="518486944" open_="true" name="Cupola hatch" tags="nucull" pos="0.6 2.09 -2.1" strength="5" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="cupola_hatch">
+								<joint id_="1532194176" pos="-0.2 0.1 0.0" type="hinge" rotstrength="0.01" rotspring="0" limits="0 105"/>
+							</vox>
+							<vox id_="876663040" open_="true" name="Hatch" tags="nucull" pos="-0.6 1.93 -1.9" strength="5" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="turret_hatch">
+								<joint id_="1742315392" pos="0.0 0.07 0.2" rot="0.0 90.0 0.0" type="hinge" rotstrength="0.01" rotspring="0" limits="0 105"/>
+							</vox>
+							<vox id_="1967838464" open_="true" name="Hatch" tags="nucull" pos="-0.8 1.3 -2.5" rot="0.0 0.0 0.0" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="sideturret_hatch">
+								<joint id_="1087111936" pos="0.0 0.0 0.0" rot="0.0 -50.0 0.0" type="hinge" rotstrength="0.019" rotspring="0.01" limits="0 105"/>
+							</vox>
+							<vox id_="2078928768" open_="true" name="MG34" tags="nocull" pos="-0.5 1.3 -0.35" prop="true" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="front_mg">
+								<joint id_="1756209792" pos="-0.05 0.1 0.15" rot="90.0 -90.0 0.0" type="hinge" rotspring="0" limits="1"/>
+							</vox>
+						</group>
+						<group id_="490894592" open_="true" name="Other" pos="0.6 1.5 2.3">
+							<location id_="525630784" tags="player" pos="0.05 0.15 0.0" rot="0.0 180.0 0.0"/>
+							<location id_="1681428736" tags="vital" pos="-0.55 0.15 -3.85" rot="0.0 180.0 0.0"/>
+							<location id_="1799531776" tags="exhaust" pos="-0.95 0.55 -4.95" rot="-90.0 -180.0 0.0"/>
+							<location id_="399138592" tags="exhaust" pos="-0.15 0.55 -4.95" rot="-90.0 0.0 0.0"/>
+						</group>
+						<vox id_="665099904" name="Left Track" tags="tracks" pos="1.5 0.2 0.6" collide="false" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="track_l"/>
+						<vox id_="2119891328" name="Right Track" tags="tracks" pos="-1.4 0.2 0.6" rot="0.0 0.0 0.0" collide="false" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="track_r"/>
+						<group id_="1895678976" open_="true" name="Left_wheels" pos="1.47 0.2 0.5">
+							<wheel id_="1206984704" open_="true" name="L-Wheel1" pos="0.0 0.5 2.0" rot="0.0 180.0 0.0" drive="1" steer="0.25" travel="-0.1 0.1">
+								<vox id_="1611169792" pos="0.0 -0.4 0.0" rot="0.0 -180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l1"/>
+							</wheel>
+							<wheel id_="1022817216" open_="true" name="L-Wheel2" pos="-0.1 0.5 1.45" rot="0.0 180.0 0.0" drive="1" steer="0.25" travel="-0.1 0.1">
+								<vox id_="343757312" pos="0.0 -0.4 0.0" rot="0.0 -180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l2"/>
+							</wheel>
+							<wheel id_="366171968" open_="true" name="L-Wheel3" pos="0.0 0.5 0.9" rot="0.0 180.0 0.0" drive="1" steer="0.15" travel="-0.1 0.1">
+								<vox id_="359552448" pos="0.0 -0.4 0.0" rot="0.0 -180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l3"/>
+							</wheel>
+							<wheel id_="1208360960" open_="true" name="L-Wheel4" pos="-0.1 0.5 0.35" rot="0.0 180.0 0.0" drive="1" steer="0.15" travel="-0.1 0.1">
+								<vox id_="1312635136" pos="0.0 -0.4 0.0" rot="0.0 -180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l4"/>
+							</wheel>
+							<wheel id_="1140002816" open_="true" name="L-Wheel5" pos="0.0 0.5 -0.2" rot="0.0 180.0 0.0" drive="1" steer="-0.15" travel="-0.1 0.1">
+								<vox id_="562464256" pos="0.0 -0.4 0.0" rot="0.0 -180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l5"/>
+							</wheel>
+							<wheel id_="1512401024" open_="true" name="L-Wheel6" pos="-0.1 0.5 -0.75" rot="0.0 180.0 0.0" drive="1" steer="-0.15" travel="-0.1 0.1">
+								<vox id_="124657080" pos="0.0 -0.4 0.0" rot="0.0 -180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l6"/>
+							</wheel>
+							<wheel id_="1486054016" open_="true" name="L-Wheel7" pos="0.0 0.5 -1.3" rot="0.0 180.0 0.0" drive="1" steer="-0.25" travel="-0.1 0.1">
+								<vox id_="2127690496" pos="0.0 -0.4 0.0" rot="0.0 -180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l7"/>
+							</wheel>
+							<wheel id_="285426688" open_="true" name="L-Wheel8" pos="-0.1 0.5 -1.85" rot="0.0 180.0 0.0" drive="1" steer="-0.25" travel="-0.1 0.1">
+								<vox id_="366171968" pos="0.0 -0.4 0.0" rot="0.0 -180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l8"/>
+							</wheel>
+							<vox id_="692692288" tags="nocull" pos="-0.1 0.41 2.7" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gear_fl" scale="1"/>
+							<vox id_="1902691712" pos="-0.1 0.21 -2.5" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gear_lr" scale="0.98"/>
+						</group>
+						<group id_="1043986688" open_="true" name="Right_wheels" pos="-1.37 0.2 0.5">
+							<wheel id_="1486578304" open_="true" name="R-Wheel1" pos="0.0 0.5 2.0" rot="0.0 180.0 0.0" drive="1" steer="0.25" travel="-0.1 0.1">
+								<vox id_="963503552" pos="0.0 -0.4 0.0" rot="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l1"/>
+							</wheel>
+							<wheel id_="1201610368" open_="true" name="R-Wheel2" pos="0.1 0.5 1.45" rot="0.0 180.0 0.0" drive="1" steer="0.25" travel="-0.1 0.1">
+								<vox id_="989457408" pos="0.0 -0.4 0.0" rot="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l2"/>
+							</wheel>
+							<wheel id_="927915328" open_="true" name="R-Wheel3" pos="0.0 0.5 0.9" rot="0.0 180.0 0.0" drive="1" steer="0.15" travel="-0.1 0.1">
+								<vox id_="1855044096" pos="0.0 -0.4 0.0" rot="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l3"/>
+							</wheel>
+							<wheel id_="1975113472" open_="true" name="R-Wheel4" pos="0.1 0.5 0.35" rot="0.0 180.0 0.0" drive="1" steer="0.15" travel="-0.1 0.1">
+								<vox id_="73798040" pos="0.0 -0.4 0.0" rot="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l4"/>
+							</wheel>
+							<wheel id_="723102848" open_="true" name="R-Wheel5" pos="0.0 0.5 -0.2" rot="0.0 180.0 0.0" drive="1" steer="-0.15" travel="-0.1 0.1">
+								<vox id_="1094255872" pos="0.0 -0.4 0.0" rot="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l5"/>
+							</wheel>
+							<wheel id_="417817504" open_="true" name="R-Wheel6" pos="0.1 0.5 -0.75" rot="0.0 180.0 0.0" drive="1" steer="-0.15" travel="-0.1 0.1">
+								<vox id_="1504011904" pos="0.0 -0.4 0.0" rot="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l6"/>
+							</wheel>
+							<wheel id_="1044445440" open_="true" name="R-Wheel7" pos="0.0 0.5 -1.3" rot="0.0 180.0 0.0" drive="1" steer="-0.25" travel="-0.1 0.1">
+								<vox id_="1634108800" pos="0.0 -0.4 0.0" rot="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l7"/>
+							</wheel>
+							<wheel id_="1958662912" open_="true" name="R-Wheel8" pos="0.1 0.5 -1.85" rot="0.0 180.0 0.0" drive="1" steer="-0.25" travel="-0.1 0.1">
+								<vox id_="894424384" pos="0.0 -0.4 0.0" rot="0.0 0.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="wheel_l8"/>
+							</wheel>
+							<vox id_="835438400" tags="nocull" pos="0.1 0.41 2.6" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gear_fl" scale="1"/>
+							<vox id_="1341472768" pos="0.0 0.21 -2.5" file="MOD/avf/prefabs/tiger_131/Tiger 131 (Early-M).vox" object="gear_rr" scale="0.98"/>
+						</group>
+					</body>
+				</vehicle>
+				<location id_="1854585344" name="cook_off" tags="cook_off" pos="0.05 1.57 0.8" rot="0 90  0"/>
+				<location id_="5701980" name="blow_out" tags="blow_out" pos="-0.45 2.37 1.3" rot="0 90  0"/>
+				<location id_="1735368064" name="blow_out" tags="blow_out" pos="0.65 2.37 1.3" rot="0 90  0"/>
+			</script>
+		</script>
+	</group>
+</prefab>
+

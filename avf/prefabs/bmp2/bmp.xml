@@ -1,0 +1,108 @@
+<prefab version="0.9.3">
+	<group id_="1130433920" open_="true" name="instance=MOD/avf/prefabs/bmp2/bmp.xml" pos="2.4 0.3 0.0" rot="0.0 0.0 0.0">
+		<script id_="1337999104" open_="true" pos="0.0 0.0 0.0" file="MOD/avf/scripts/simple_avf_tank.lua">
+			<script id_="1089799168" open_="true" pos="0.0 0.0 0.0" file="MOD/avf/scripts/Immersive_Tank.lua">
+				<vehicle id_="2066279552" open_="true" name="bmp2" tags="cfg=vehicle name=bmp2" pos="0.0 0.0 0.0" rot="0.0 0.0 0.0" driven="false" sound="tank1" spring="1" damping="0.8" topspeed="50" acceleration=".25" strength="50" antispin="1" antiroll="0.2" difflock="1" steerassist="2" friction="2">
+					<body id_="1684377984" open_="true" tags="component=body" pos="0.0 0.0 0.0" rot="0.0 0.0 0.0" dynamic="true">
+						<vox id_="1692701568" open_="true" tags="component=chassis" pos="0.0 0.5 0.0" rot="0 0 0" density="20" strength="5" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="body">
+							<light id_="112597720" pos="1.6 1.4 -4.1" rot="0.0 180.0 0.0" type="cone" color="1 .9 .8" scale="20" angle="50" penumbra="15" size="0.1" unshadowed="0.2" glare="0.4"/>
+							<light id_="1870511616" pos="-1.6 1.4 -4.1" rot="0.0 180.0 0.0" type="cone" color="1 .9 .8" scale="20" angle="50" penumbra="15" size="0.1" unshadowed="0.2" glare="0.4"/>
+							<light id_="1641908096" pos="1.65 1.3 4.0" rot="0.0 0.0 0.0" type="area" color="1 .1 .1" size="0.2 0.1" unshadowed="0.2" glare="0.2"/>
+							<light id_="2119629184" pos="-1.65 1.3 4.0" rot="0.0 0.0 0.0" type="area" color="1 .1 .1" size="0.2 0.1" unshadowed="0.2" glare="0.2"/>
+							<location id_="554861632" tags="exhaust" pos="1.6 1.8 -1.0" rot="-25 -00 0 "/>
+							<location id_="395468352" tags="exhaust" pos="1.7 1.8 -0.7" rot="-45 -00 0 "/>
+							<location id_="39455080" tags="exhaust" pos="1.7 1.8 -0.7" rot="-25 -00 0 "/>
+							<location id_="1473929088" tags="exhaust" pos="1.6 1.8 -0.9" rot="-45 -00 0 "/>
+							<location id_="1405570816" tags="exhaust" pos="1.6 1.8 -0.7" rot="-45 -00 0 "/>
+							<location id_="1894695808" tags="player" pos="-0.4 1.2 -1.5" rot="0.0 0.0 0.0"/>
+							<vox id_="337924224" open_="true" tags="component=turret turretGroup=mainTurret" pos="0.0 1.7 0.8" rot="0.0 180 0" density="1.2" prop="true" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="turret">
+								<joint id_="1915865344" tags="component=turretJoint" pos="0.0 0.1 0.0" rot="90 0 0" type="hinge" size="0.3" rotspring="0" sound="true"/>
+								<vox id_="434530208" open_="true" tags="component=gun weaponType=2A42 group=primary  coax=PKTM" pos="0.0 0.25 2.3" rot="0 0 0" density="0.000001" strength="2" prop="true" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="gun">
+									<joint id_="1382304128" tags="component=gunJoint" pos="0.4 0.1 -1.5" rot="0 90 0" type="hinge" size="0.1" rotstrength="0" rotspring="0" limits="-70 2" sound="true"/>
+									<joint id_="1372669696" pos="-0.3 0.1 -1.5" rot="0 90 0" type="hinge" size="0.1" rotstrength="1" rotspring="0" limits="-70 2" sound="true"/>
+								</vox>
+							</vox>
+							<group id_="463826592" open_="true" name="magazines" pos="-0.1 0.3 -0.2">
+								<vox id_="936435520" tags="ammo_rack=0.75" pos="-0.2 0.1 0.1" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="ammo_left"/>
+								<vox id_="340676928" tags="ammo_rack=0.75" pos="0.5 0.1 0.1" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="ammo_right"/>
+							</group>
+							<vox id_="1449810304" name="tracks" pos="-1.5 -0.4 0.5" collide="false" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="tracks_l"/>
+							<vox id_="300173184" name="tracks" pos="1.6 -0.4 0.5" collide="false" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="tracks_r"/>
+							<vox id_="1528917120" name="engine" tags="engine" pos="0.0 0.8 -2.9" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="engine"/>
+						</vox>
+						<vox id_="2055465472" open_="true" pos="-0.5 2.2 -1.7" rot="0 0  0" prop="true" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="driverHatch">
+							<joint id_="739225664" pos="-0.0  00 .3" rot="90 00 0" type="hinge" size="0.1" rotstrength="0.01" rotspring="0" collide="true" sound="true"/>
+						</vox>
+						<vox id_="2107766400" open_="true" pos="0.5 2.2 3.1" rot="0 0  0" prop="true" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="hatchR">
+							<joint id_="1786227200" pos="-0.28 0.0 0.2" rot="0 00 90" size="0.1" rotspring="0" collide="true" sound="true"/>
+							<joint id_="540573952" pos="-0.28 0.0 -0.4" rot="0 00 90" type="hinge" size="0.1" rotstrength="0.01" rotspring="0" collide="true" sound="true"/>
+						</vox>
+						<vox id_="46467860" open_="true" pos="-0.5 2.22 3.1" rot="0 0  0" prop="true" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="hatchL">
+							<joint id_="873189440" pos="0.42 0.0 0.2" rot="0 00 90" size="0.1" rotspring="0" collide="true" sound="true"/>
+							<joint id_="1212358912" pos="0.42 0.0 -0.4" rot="0 00 90" type="hinge" size="0.1" rotstrength="0.01" rotspring="0" collide="true" sound="true"/>
+						</vox>
+						<vox id_="1738448512" open_="true" tags="muzzle_blast_ignore" pos="0.0 1.7 -2.9" rot="0 0  0" collide="true" prop="true" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="engine_hatch">
+							<joint id_="2087252352" pos="-0.9 0.2 -0.7" rot="0 00 90" type="ball" size="0.1" rotspring="0" collide="true" sound="true"/>
+							<joint id_="1993661312" pos="1.1 0.2 -0.7" rot="0 00 90" type="ball" size="0.1" rotspring="0" collide="true" sound="true"/>
+							<joint id_="1615954176" name="break_joint" tags="break_joint" pos="0.0 0.5 0.6" rot="0 00 90" type="ball" size="0.1" rotspring="0" collide="true" sound="true"/>
+						</vox>
+						<vox id_="895931776" open_="true" pos="0.7 .9 4.1" rot="0 0  0" prop="true" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="reardoorR">
+							<joint id_="2011357056" pos="0.62 0.4 -0.25" rot="90 0 0" type="ball" size="0.2" rotstrength="0.1" rotspring="0" collide="true" sound="true"/>
+							<joint id_="176695840" pos="0.62 1.1 -0.25" rot="90 0 0" type="ball" size="0.2" rotstrength="0.1" rotspring="0" collide="true" sound="true"/>
+						</vox>
+						<vox id_="1090388992" open_="true" pos="-0.7 .9 4.1" rot="0 0  0" prop="true" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="reardoorL">
+							<joint id_="475033920" pos="-0.52 0.4 -0.25" rot="90 0 0" type="ball" size="0.2" rotstrength="0.1" rotspring="0" collide="true" sound="true"/>
+							<joint id_="1886568960" pos="-0.52 1.1 -0.25" rot="90 0 0" type="ball" size="0.2" rotstrength="0.1" rotspring="0" collide="true" sound="true"/>
+						</vox>
+						<wheel id_="1530359040" name="whr1" pos="1.0 0.55 -2.0" drive="1" steer="0.66" travel="-0.1 0.1">
+							<vox id_="1495098496" pos=".6 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whr1"/>
+						</wheel>
+						<wheel id_="163260144" name="whr2" pos="1.0 0.55 -1.2" drive="1" steer="0.44" travel="-0.1 0">
+							<vox id_="169224288" pos=".6 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whr2"/>
+						</wheel>
+						<wheel id_="1590524672" name="whr3" pos="1.0 0.55 -0.3" drive="1" steer="0.33" travel="-0.1 0">
+							<vox id_="2047338496" pos=".6 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whr3"/>
+						</wheel>
+						<wheel id_="1278750976" open_="true" name="whr4" pos="1.0 0.55 0.6" drive="1" steer="-0.33" travel="-0.1 0">
+							<vox id_="1513842944" pos=".6 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whr4"/>
+						</wheel>
+						<wheel id_="299911040" name="whr5" pos="1.0 0.55 1.5" drive="1" steer="-0.33" travel="-0.1 0">
+							<vox id_="931978816" pos=".6 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whr5"/>
+						</wheel>
+						<wheel id_="1268854400" name="whr6" pos="1.0 0.55 2.5" drive="1" steer="-0.33" travel="-0.1 0">
+							<vox id_="2136145280" pos=".6 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whr6"/>
+						</wheel>
+						<wheel id_="1457806208" name="whl1" pos="-1.0 0.55 -2" drive="1" steer="0.66" travel="-0.1 0.1">
+							<vox id_="1894630272" pos="-.4 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whl1"/>
+						</wheel>
+						<wheel id_="378165792" name="whl2" pos="-1.0 0.55 -1.2" drive="1" steer="0.44" travel="-0.1 0">
+							<vox id_="145892032" pos="-0.4 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whl2"/>
+						</wheel>
+						<wheel id_="245578384" name="whl3" pos="-1.0 0.55 -0.3" drive="1" steer="0.33" travel="-0.1 0">
+							<vox id_="390618400" pos="-.4 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whl3"/>
+						</wheel>
+						<wheel id_="1591966592" name="whl4" pos="-1.0 0.55 0.6" drive="1" steer="-0.33" travel="-0.1 0">
+							<vox id_="279265952" pos="-.4 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whl4"/>
+						</wheel>
+						<wheel id_="437479488" name="whl5" pos="-1.0 0.55 1.5" drive="1" steer="-0.33" travel="-0.1 0">
+							<vox id_="945217856" pos="-.4 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whl5"/>
+						</wheel>
+						<wheel id_="701736768" name="whl6" pos="-1.0 0.55 2.5" drive="1" steer="-0.33" travel="-0.1 0">
+							<vox id_="1019081472" pos="-.4 -0.375 0.05" rot="0.0 180.0 0.0" file="MOD/avf/prefabs/bmp2/bmp2D.vox" object="whl6"/>
+						</wheel>
+					</body>
+				</vehicle>
+				<location id_="1308440576" name="cook_off" tags="cook_off min_force=10 max_force=75" pos="0.05 1.62 0.8" rot="0 90  0"/>
+				<location id_="1832039680" name="burn_off" tags="burn_off" pos="0.05 1.07 -0.2" rot="0 90  0"/>
+				<location id_="1449613696" name="burn_off" tags="burn_off" pos="0.01618 1.57 -2.28546" rot="0 90  0"/>
+				<location id_="1384401408" name="blow_out" tags="blow_out" pos="-0.75002 2.27 3.0" rot="0 90  0"/>
+				<location id_="1322793856" name="blow_out" tags="blow_out" pos="0.84998 2.27 2.99999" rot="0 90  0"/>
+				<location id_="1696306304" name="blow_out" tags="blow_out" pos="0.0081 1.97 -2.35117" rot="0 90  0"/>
+				<location id_="1437030016" name="mainCannon_emitter" tags="mainCannon_emitter" pos="0.05 2.5 -3.019"/>
+				<location id_="1025045632" name="mainCannon_coax_emitter" tags="mainCannon_coax_emitter" pos="-0.27908 2.55 -0.82014"/>
+				<location id_="596938304" name="mainCannon_sight" tags="mainCannon_sight" pos="-0.73591 2.85 0.26026"/>
+			</script>
+		</script>
+	</group>
+</prefab>
+
