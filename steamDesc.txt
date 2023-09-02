@@ -1,0 +1,114 @@
+[h1]Armed Vehicle Framework (AVF)[/h1]
+
+The [b]Armed Vehicle Framework[/b], also called [b]AVF[/b], is a teardown framework that enables player controlled turrets and weapons on vehicles or static weapons. 
+
+[h1]Features [/h1]
+
+[list]
+	[*] Simple system that uses xml tags to enable in game vehicles / static weapons to shoot
+
+	[*] Global mod that Works on any vehicle on any map that fits the AVF xml tag structure
+
+	[*] Easily used in game to fire multiple weapons on any vehicle
+
+        [*] Full ballistics model - bullet drop, realistic penetration mechanics, spalling / shrapnel.  
+
+	[*] Range of cannons, machine guns, artillary, and rockets to choose from, each with different aesthetics and effects. 
+
+	[*] Support for countermeasures such as smoke launchers and ERA blocks. 
+
+	[*] A range of weapon payloads, including high explosive, armour piercing high explosive,  HEAT rounds, HESH shells, kinetic or AP rounds, incendiary shells, etc.
+
+	[*] Modifiable control scheme
+
+	[*] Full config to setup your own custom weapon parameters
+[/list]
+
+[h1]Usage:[/h1] 
+
+[b]Activate[/b] this mod in the [b]mod manager[/b] window then play any map that has AVF supporting vehicles. This mod will detect any AVF compatible vehicles and make their weapons functional.
+
+
+[h1]Modders resources:[/h1]
+[hr][/hr]
+
+
+The idelogy of AVF is the following: Vehicles have bodies, bodies have components, a component can be a chassis, turret, gun, etc. like a gun has a gun joint to attatch it to the vehicle, as a turret also has a turret joint to connect it to the vehicle. These joints can be any type you like, so long as they are configured correctly.
+
+
+Vehicles are configured as follows with xml config values, showing an example of a vehicle with 2 guns, one on a turret, one attatched to the vehicle itself. (This can be done on raw code or editor, I'd suggest in the editor) 
+
+
+[b]Do note, the below is purely a pseudocode to define the structure[/b]
+
+[code]
+	<vehicle [field:tags] cfg=vehicle/>
+		<body [field:tags] component=body/> 
+			<vox  	[type:vox] = mainVehicle.vox
+					[field:tags] component=chassis/>
+
+			<vox  	[type:vox] = hullGun.vox
+					[field:tags] component=gun weaponType=PKT group=secondary
+
+					<vox  	[type:joint]
+					[field:tags]component=gunJoint/>
+		
+			</vox>
+
+			<vox  	[type:vox] = turret.vox
+					[field:tags]component=turret turretGroup=mainTurret
+					<vox  	[type:joint]
+					[field:tags]component=turretJoint/>
+
+					<vox  	[type:vox] = turretGun.vox
+							[field:tags] component=gun weaponType=L30A1 group=primary
+
+							<vox  	[type:joint]
+							[field:tags]component=gunJoint/>
+				
+					</vox>
+
+			</vox>
+[/code]
+
+
+[h1]Notes [/h1]
+
+If you want weapons that don't aim on the vehicle then you can just attach them with however many joints to keep them stationary. 
+
+Stationary / static weapons can also be achieved by creating a vehicle to represent the above structure but just not giving it wheels or anything. You may want to put the player location tag to allow aiming though. If you find your static weapon moves in an annoying way then i just joint them to the ground, they are static after all! 
+
+
+
+[h1]List of weapons[/h1]
+
+[b]To Be Completed[/b]
+
+
+
+[h1]Issues / Contact [/h1]
+
+For the time being if you have any questions or issues then feel free to leave a comment below or message me in the teardown discord server. 
+
+
+[h1]Thanks[/h1]
+
+
+Many  thanks to the following users during development 
+
+[list]
+
+    [*] Rubikow: much guidance in early lua coding / weapon setup. 
+
+
+    [*] Spexta - much assistance and inspiration for concepts to be implemented in this mod. 
+
+
+    [*] My Cresta - generally cool dude who was nice to chat to about concepts.  
+
+
+    [*] Cheejins - Really cool dude who aided in the newer camera fixes. 
+
+
+    [*] TTFH, for their fantastic vehicle camera improvements 
+
