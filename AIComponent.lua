@@ -815,6 +815,9 @@ function AVF_ai:targetSelection(ai)
 						if(ai.behaviors.target ~= nil and other_ai.id == ai.behaviors.target.id) then 
 							dist = dist *ai.proximity_threshold 
 						end
+						if(other_ai.cooking_off)then 
+							dist = dist *50
+						end
 						if(hit_target and dist <closestDistance) then 
 							closestTarget = other_ai
 							closestDistance = dist
