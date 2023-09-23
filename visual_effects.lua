@@ -1,69 +1,69 @@
 
-function fire(gun,barrelCoords)
-    if(gun.mouseDownSound and getPlayerMouseDown())then
-    	if(not gun.loopSoundFile)then 
-			PlaySound(gun.mouseDownSound, barrelCoords.pos, 50, false)
-		end
-    elseif(not gun.tailOffSound or not getPlayerMouseDown())then
-    	PlaySound(gun.sound, barrelCoords.pos, 50, false)
-    	-- PlaySound(explosion_sounds[math.random(1,#explosion_sounds)],barrelCoords.pos, 400, false)
+-- function fire(gun,barrelCoords)
+--     if(gun.mouseDownSound and getPlayerMouseDown())then
+--     	if(not gun.loopSoundFile)then 
+-- 			PlaySound(gun.mouseDownSound, barrelCoords.pos, 50, false)
+-- 		end
+--     elseif(not gun.tailOffSound or not getPlayerMouseDown())then
+--     	PlaySound(gun.sound, barrelCoords.pos, 50, false)
+--     	-- PlaySound(explosion_sounds[math.random(1,#explosion_sounds)],barrelCoords.pos, 400, false)
 		
-    end
+--     end
 
 
-	if(not oldShoot)then
-		if(gun.weaponType =="special") then 
-			pushSpecial(barrelCoords,gun)
-		--	DebugWatch("USING",gun.name)
-		else
-			pushProjectile(barrelCoords,gun)
-		end
-	else 
-		local cannonLoc=  barrelCoords--rectifyBarrelCoords(gun)
-			QueryRejectBody(vehicle.body)
-			QueryRejectShape(gun.id)
-			local fwdPos = TransformToParentPoint(cannonLoc, Vec(0,  maxDist * -1),1)
-		    local direction = VecSub(fwdPos, cannonLoc.pos)
-		    direction = VecNormalize(direction)
-		    QueryRequire("physical")
-		    hit, dist = QueryRaycast(cannonLoc.pos, direction, maxDist)
-		    -- utils.printStr(dist)
+-- 	if(not oldShoot)then
+-- 		if(gun.weaponType =="special") then 
+-- 			pushSpecial(barrelCoords,gun)
+-- 		--	DebugWatch("USING",gun.name)
+-- 		else
+-- 			pushProjectile(barrelCoords,gun)
+-- 		end
+-- 	else 
+-- 		local cannonLoc=  barrelCoords--rectifyBarrelCoords(gun)
+-- 			QueryRejectBody(vehicle.body)
+-- 			QueryRejectShape(gun.id)
+-- 			local fwdPos = TransformToParentPoint(cannonLoc, Vec(0,  maxDist * -1),1)
+-- 		    local direction = VecSub(fwdPos, cannonLoc.pos)
+-- 		    direction = VecNormalize(direction)
+-- 		    QueryRequire("physical")
+-- 		    hit, dist = QueryRaycast(cannonLoc.pos, direction, maxDist)
+-- 		    -- utils.printStr(dist)
 
-		    if hit then
-				hitPos = TransformToParentPoint(cannonLoc, Vec(0, dist * -1,0))
-			else
-				hitPos = TransformToParentPoint(cannonLoc, Vec(0,  maxDist * -1,0))
-			end
-		      	p = cannonLoc.pos
+-- 		    if hit then
+-- 				hitPos = TransformToParentPoint(cannonLoc, Vec(0, dist * -1,0))
+-- 			else
+-- 				hitPos = TransformToParentPoint(cannonLoc, Vec(0,  maxDist * -1,0))
+-- 			end
+-- 		      	p = cannonLoc.pos
 
-				d = VecNormalize(VecSub(hitPos, p))
-				spread = 0.03
-				d[1] = d[1] + ((math.random()-0.5)*2*spread)*dist/maxDist
-				d[2] = d[2] + ((math.random()-0.5)*2*spread)*dist/maxDist
-				d[3] = d[3] + ((math.random()-0.5)*2*spread)*dist/maxDist
-				d = VecNormalize(d)
-				p = VecAdd(p, VecScale(d, 0.5))
+-- 				d = VecNormalize(VecSub(hitPos, p))
+-- 				spread = 0.03
+-- 				d[1] = d[1] + ((math.random()-0.5)*2*spread)*dist/maxDist
+-- 				d[2] = d[2] + ((math.random()-0.5)*2*spread)*dist/maxDist
+-- 				d[3] = d[3] + ((math.random()-0.5)*2*spread)*dist/maxDist
+-- 				d = VecNormalize(d)
+-- 				p = VecAdd(p, VecScale(d, 0.5))
 				
 
-				-- if(gun.highVelocityShells)then
-						-- utils.printStr(gun.loadedMagazine)--type(munitions[gun.magazines[gun.loadedMagazine].name]))
-					-- if (gun.magazines[gun.loadedMagazine].CfgAmmo.maxPenDepth and hit) then
+-- 				-- if(gun.highVelocityShells)then
+-- 						-- utils.printStr(gun.loadedMagazine)--type(munitions[gun.magazines[gun.loadedMagazine].name]))
+-- 					-- if (gun.magazines[gun.loadedMagazine].CfgAmmo.maxPenDepth and hit) then
 							
-					-- 	cannonLoc.pos = hitPos
-					-- 	pushShell(gun,hitPos,dist,(maxDist-dist),cannonLoc)
+-- 					-- 	cannonLoc.pos = hitPos
+-- 					-- 	pushShell(gun,hitPos,dist,(maxDist-dist),cannonLoc)
 
-					-- else
+-- 					-- else
 
-					-- 	pushShell(gun,hitPos,dist)
-					-- end
-				-- else
-					Shoot(p, d,0)
-				-- end		
-	end
+-- 					-- 	pushShell(gun,hitPos,dist)
+-- 					-- end
+-- 				-- else
+-- 					Shoot(p, d,0)
+-- 				-- end		
+-- 	end
 
 	
 
-end
+-- end
 
 
 ---

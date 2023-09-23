@@ -7,7 +7,12 @@
 
 
 
-function fire(gun,barrelCoords,intel_payload)
+function fire(gun,barrelCoords,intel_payload)	
+	-- if(intel_payload and intel_payload.payload_type ) then 
+	-- 	DebugPrint("fire mode intel payload: "..intel_payload.payload_type)
+	-- else 
+	-- 	DebugPrint("fire mode no intel payload detected")
+	-- end
     if(gun.mouseDownSound and getPlayerMouseDown())then
     	if(not gun.loopSoundFile)then 
 			PlaySound(gun.mouseDownSound, barrelCoords.pos, 50, false)
@@ -417,6 +422,9 @@ function homing_missile_computations(projectile,dt)
 	if(not projectile.homing_computations )then 
 		projectile.homing_computations = {}
 	end
+	if(not(projectile.guidance_system)) then 
+		init_missile_behaviours(projectile)
+	end
 
 	if(projectile.shellType.launch_method and projectile.shellType.launch_method == "soft_launch" and
 	 not projectile.standoff_exceeded ) then
@@ -440,7 +448,8 @@ function homing_missile_computations(projectile,dt)
 			-- 	) 
 			projectile.homing_computations.attack_pattern_set = true
 		end
-
+	else
+		compute_CED(dt,projectile) 
 	end
 
 end
@@ -601,6 +610,11 @@ end
 ---
 
 function pushProjectile(cannonLoc,gun,intel_payload)
+	-- if(intel_payload and intel_payload.payload_type ) then 
+	-- 	DebugPrint("push projectile intel payload: "..intel_payload.payload_type)
+	-- else 
+	-- 	DebugPrint("push projectile: no intel payload detected")
+	-- end
 	local fwdPos = TransformToParentPoint(cannonLoc, Vec(0,-1,0))
 
 	local direction = VecSub(fwdPos, cannonLoc.pos)
@@ -655,7 +669,9 @@ function pushProjectile(cannonLoc,gun,intel_payload)
 	end 
 
 
-	loadedShell = pre_mission_calibration(loadedShell)
+
+	loadedShell = pre_mission_calibration(loadedShell,intel_payload)
+
 
 	loadedShell.pen_dist_coef= 1
 
@@ -685,11 +701,19 @@ end
 
 
 ]]
-function pre_mission_calibration(loadedShell)
-	if(loadedShell.intel_payload) then 
-		if(loadedShell.shellType.launcher == "homing")then 
-			loadedShell.target_body =  loadedShell.shellType.intel_payload.target_body 
-
+function pre_mission_calibration(loadedShell,intel_payload)
+	-- if(intel_payload and intel_payload.payload_type ) then 
+	-- 	DebugPrint("calibration: intel payload: "..intel_payload.payload_type)
+	-- else 
+	-- 	DebugPrint("calibration: no intel payload detected")
+	-- end
+	-- 	DebugPrint("test calibration")
+	if(intel_payload) then 
+		if(loadedShell.shellType.guidance == "homing")then 
+			loadedShell.target_body =  intel_payload.target_body 
+			if(loadedShell.shellType.attack_pattern == "top_down") then
+				loadedShell.flight_path,loadedShell.flight_keypoints = generate_top_down_pattern(loadedShell)
+			end
 		end
 
 

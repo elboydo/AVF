@@ -929,7 +929,7 @@ function tick(dt)
 		gameplayTicks(dt)
 		playerTicks(dt)
 
-		guidance_tick(dt)
+		--guidance_tick(dt)
 	end
 
 	pollNewVehicle(dt)
@@ -1902,7 +1902,8 @@ function handleGunOperation(dt)
 						    -- DebugWatch("cfgammo",gun.magazines[gun.loadedMagazine].CfgAmmo.launcher)
 
 					  
-					    if(gun.magazines[gun.loadedMagazine].CfgAmmo.launcher == "homing") then 
+					    if(gun.magazines[gun.loadedMagazine].CfgAmmo.guidance and 
+					    	gun.magazines[gun.loadedMagazine].CfgAmmo.guidance == "homing") then 
 					    	initiate_missile_guidance(dt,gun,firing)
 					    else
 
@@ -2126,7 +2127,7 @@ end
 
 ]]
 function initiate_missile_guidance(dt,gun,firing)
-	local target_body
+	local target_body = nil
 	local max_dist = 400
 	local playerShooting,released,held = getPlayerShootInput()
 	if(playerShooting and firing)then
@@ -2145,6 +2146,7 @@ function initiate_missile_guidance(dt,gun,firing)
 	    	
 	    	local last_tracked,tracked_object = verify_tracked_target(gun,shape)
 	    	target_body = tracked_object
+	    	gun.target_body = tracked_object
 
 	    	if(gun.missile_guidance_tracked_target ~= nil and last_tracked ) then 
 	    		gun.missile_guidance_current_track = gun.missile_guidance_current_track + dt
@@ -2161,7 +2163,7 @@ function initiate_missile_guidance(dt,gun,firing)
 	    local pos = VecAdd(cannonLoc.pos,VecScale(direction,dist))
 	    DrawLine(cannonLoc.pos, pos, 1, 0, 0) 
 
-	    DebugWatch("dist",dist)
+	    -- DebugWatch("dist",dist)
 	
 
 	elseif(released) then 
@@ -2172,19 +2174,32 @@ function initiate_missile_guidance(dt,gun,firing)
 			gun.missile_guidance_active_tracking_target = true
 			gun.missile_guidance_target_lock = true
 			gun.missile_guidance_target_pos = TransformToLocalPoint(GetBodyTransform(gun.missile_guidance_tracked_target),center)
-			Explosion(TransformToParentPoint(GetBodyTransform(gun.missile_guidance_tracked_target),gun.missile_guidance_target_pos ),1.5)
+			-- Explosion(TransformToParentPoint(GetBodyTransform(gun.missile_guidance_tracked_target),gun.missile_guidance_target_pos ),1.5)
+
+			intel_payload = {
+				payload_type 		= "target",
+				target_body = gun.missile_guidance_tracked_target ,
+
+
+			}	
+
+			fireControl(dt,gun,Vec(),intel_payload)
 		elseif (gun.missile_guidance_current_track)>0.5 then       	
 			local min, max = GetBodyBounds(gun.missile_guidance_tracked_target )
 			local boundsSize = VecSub(max, min)
 			local center = VecLerp(min, max, 0.5)
 			gun.missile_guidance_target_pos = center
-			Explosion(center,1.2)
+			-- Explosion(center,1.2)
+
 
 			intel_payload = {
-				target_body = target_body,
+				payload_type 		= "target",
+				target_body = gun.missile_guidance_tracked_target ,
 
 
 			}
+			fireControl(dt,gun,Vec(),intel_payload)
+
 		end
 		reset_missile_track(gun)
 	elseif(gun.missile_guidance_tracking_target) then
@@ -2195,7 +2210,7 @@ end
 function verify_tracked_target(gun,shape) 
 	local tracked_body = GetShapeBody(shape)
 	tracked_body,mass = get_largest_body(tracked_body)
-	DebugWatch("mass",mass)
+	-- DebugWatch("mass",mass)
 	if(mass==0) then 
 		return false,tracked_body
 	end
@@ -2435,6 +2450,12 @@ end
 ]]
 
 function fireControl(dt,gun,barrelCoords,--[[optional]]intel_payload)
+	-- if(intel_payload and intel_payload.payload_type ) then 
+	-- 	DebugPrint("firecontrol intel payload: "..intel_payload.payload_type)
+	-- else 
+	-- 	DebugPrint("firecontrol no intel payload detected")
+	-- end
+
 	local body = GetShapeBody(gun.id)
 	-- utils.printStr("firing "..gun.name.."with "..munitions[gun.default].name.."\n"..body.." "..gun.id.." "..vehicle.body)
 	local barrelCoords = rectifyBarrelCoords(gun)
