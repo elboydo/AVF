@@ -76,7 +76,9 @@ function draw()
 		UiPush()
 			if(vehicle.sniperMode and not vehicle.artillery_weapon)then
 				for key,gun in pairs(gunGroup)	do 
-					drawWeaponReticles(gun)	
+					if(not gun.custom_sight_script) then
+						drawWeaponReticles(gun)	
+					end
 				end
 		end
 		UiPop()
@@ -106,6 +108,7 @@ function draw()
 		UiFont("bold.ttf", 24)
 
 		-- local weaponText =  string.format("%s%s\n%s", tag, title, tag)
+		if(not GetBool("savegame.mod.hideControls")) then		
 		if(gunGroup~=nil and #gunGroup>0) then 
 			for key,gun in pairs(gunGroup)	do 
 					-- UiPush()
@@ -133,7 +136,7 @@ function draw()
 		end
 			UiPop()
 
-		if(not GetBool("savegame.mod.hideControls")) then
+
 			drawControls()
 		end
 
@@ -564,7 +567,7 @@ function debug_track_gun(gun)
 	end
 	-- utils.printStr	(gun.multiBarrel)--.." | "..#gun.barrels	)
 	local cannonLoc = GetShapeWorldTransform(gun.id)
-	DebugCross(cannonLoc.pos,1,0,0)
+	-- DebugCross(cannonLoc.pos,1,0,0)
 	local y = barrel.y
 	local x = barrel.x 
 	local z = barrel.z
@@ -575,6 +578,6 @@ function debug_track_gun(gun)
 	local direction = VecSub(fwdPos, cannonLoc.pos)
 	cannonLoc.pos = VecAdd(cannonLoc.pos, direction)
 
-	DebugCross(cannonLoc.pos)
+	-- DebugCross(cannonLoc.pos)
 	return cannonLoc
 end

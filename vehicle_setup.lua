@@ -79,13 +79,15 @@ function addGun(gunJoint,attatchedShape,turretJoint)
 
 	-- vehicleFeatures.weapons[group][index].test = deepcopy(weapons[weaponType])
 	vehicleFeatures.weapons[group][index].id = gun
-
+	vehicleFeatures.weapons[group][index].parent_vehicle = vehicle.id
+	vehicleFeatures.weapons[group][index].parent_shape = attatchedShape
 	local status,retVal = pcall(gunCustomization,(vehicleFeatures.weapons[group][index]));
 	if status then 
 		-- DebugPrint("no errors")
 	else
 		DebugPrint(retVal)
 	end
+
 	-- gunCustomization(vehicleFeatures.weapons[group][index])
 
 	status,retVal = pcall(loadShells,(vehicleFeatures.weapons[group][index]));

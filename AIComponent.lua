@@ -915,8 +915,8 @@ function AVF_ai:weaponAiming(ai)
 	local hit, dist,normal, shape = QueryRaycast(commanderPos.pos, dir , VecLength(fwdPos)*0.95,0,true)
 		-- DebugLine(commanderPos.pos,VecAdd(commanderPos.pos,fwdPos))
 	-- DebugWatch("hit",shape)
-	DebugCross(targetPos.pos,1,0,0)
-	DebugCross(commanderPos.pos,0,1,0)
+	-- DebugCross(targetPos.pos,1,0,0)
+	-- DebugCross(commanderPos.pos,0,1,0)
 
 	if(hit==nil) then 
 		hit = false

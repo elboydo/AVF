@@ -8,7 +8,7 @@ t_guidance_peak_dist = 50
 
 
 
-DEBUG_GUIDANCE_FUNCTIONALITY =true
+DEBUG_GUIDANCE_FUNCTIONALITY =false
 
 
 
@@ -35,26 +35,26 @@ end
 
 
 function guidance_tick(dt)
+	if(DEBUG_GUIDANCE_FUNCTIONALITY) then 
+		guidance_peak_height = t_guidance_peak_dist * guidance_height_ratio
+		test_distance = t_test_distance * scale_modifier
 
-	guidance_peak_height = t_guidance_peak_dist * guidance_height_ratio
-	test_distance = t_test_distance * scale_modifier
+		guidance_peak_dist = t_guidance_peak_dist *scale_modifier
 
-	guidance_peak_dist = t_guidance_peak_dist *scale_modifier
+		guidance_peak_height = guidance_peak_height  *scale_modifier
 
-	guidance_peak_height = guidance_peak_height  *scale_modifier
+		guidance_drop_dist = guidance_peak_dist * 1.5
+		DebugWatch("guidance being run",dt)
+		DebugPrint("------------------ guidance being run -----------------")
 
-	guidance_drop_dist = guidance_peak_dist * 1.5
-	DebugWatch("guidance being run",dt)
-	DebugPrint("------------------ guidance being run -----------------")
+		debug_top_down_generation()
 
-	debug_top_down_generation()
+		-- for i =1 , 50 do 
+		-- 	 reworked_top_down(dt,i*test_distance,i)
+		-- end
 
-	-- for i =1 , 50 do 
-	-- 	 reworked_top_down(dt,i*test_distance,i)
-	-- end
-
-	-- basic_sin(dt)
-
+		-- basic_sin(dt)
+	end
 
 
 end
@@ -90,6 +90,7 @@ function generate_top_down_pattern(projectile)
 	local projectie_x_y = Vec(projectile.cannonLoc[1],0,projectile.cannonLoc[3])
 	local target_dist = VecLength(VecSub(target_x_y,projectie_x_y)) 
 	local guidance_peak_dist =  projectile.shellType.guidance_peak_dist
+	-- DebugWatch("guidance_peak_dist",guidance_peak_dist)
 	local guidance_height_ratio =  projectile.shellType.guidance_height_ratio 
 	local guidance_peak_height = guidance_peak_dist * guidance_height_ratio
 	local guidance_drop_dist = guidance_peak_dist * 1.5
@@ -104,6 +105,9 @@ function generate_top_down_pattern(projectile)
 		flight_keypoints,
 		target_dist
 		)
+
+
+
 	return flight_pattern,flight_keypoints
 
 
@@ -197,7 +201,7 @@ function top_down_computation(
 			hit_apex = true
 			drop_offset =  ((expected_guidance_drop_dist*2) * t) * overcompensation 
 			flight_keypoints[1] = {
-				Target_Point = Vec(0,y,x),
+				Target_Point = Vec(0,y_pos,x_pos),
 				target_type = "pos",
 				completed = false
 			}
@@ -216,21 +220,14 @@ function top_down_computation(
 					flight_pattern,
 					flight_index
 					)
+			else
+				flight_distance = x_pos
+			end
 				flight_keypoints[2] = {
-					Target_Point = Vec(0,y,flight_distance),
+					Target_Point = Vec(0,y_pos, x_move +flight_distance),
 					target_type = "pos",
 					completed = false
 				}
-
-			else
-				flight_distance = x_pos
-
-				flight_keypoints[2] = {
-					Target_Point = Vec(0,y,flight_distance),
-					target_type = "pos",
-					completed = true
-				}
-			end
 
 
 			if(DEBUG_GUIDANCE_FUNCTIONALITY) then 
@@ -314,81 +311,8 @@ function TruProNav()
 
 ]]
 
--- Commanded Acceleration = N * Vc * LOS_Rate
-
--- N = Unitless navigation gain (constant) -- between 3 to 5
--- Vc = Closing Velocity (or "range closing rate")
--- LOS_Rate = LOS Rotation Rate
-	--control_effector_commmand
-
 end
 
-
---[[
-
-	projectile assumed to have its pos, target pos intel, uses assumed next tick, 
-	N = nav gain -  is typically 3-5
-	nt is target acceleration to los, 
-
-
-	
-
-]]
-
-function simple_Ad_ProNav(
-	projectile,
-	msl_pos,
-	 tgt_pos,
-	 msl_pos_previous, 
-	 tgt_pos_previous,
-	 latax, 
-	 N , 
-	 Nt 
-	 )
-
-	if not N then 
-		N = 3.0
-	end
-	if not Nt then
-		Nt = 1
-	end
-	if (msl_pos_previous  and tgt_pos_previous ) then 
-		
-
-		--# Get msl-target distances of previous frame and new frame (Rtm)
-		RTM_new =  VecSub( tgt_pos, msl_pos )
-		RTM_old =  VecSub( tgt_pos_previous,msl_pos_previous )
-		
-		--# normalize RTM vectors
-		RTM_new = VecNormalize(RTM_new)
-		RTM_old = VecNormalize(RTM_old)
-		
-		if vecength(RTM_old) == 0 then 
-			LOS_Delta = Vec( 0, 0, 0 )
-			LOS_Rate = 0.0
-		else
-			LOS_Delta = VecSub(RTM_new  - RTM_old)
-			LOS_Rate = Vecength(LOS_Delta)
-		end
-		--# range closing rate
-		Vc = -LOS_Rate
-		
-	--	# Now, calculate the final lateral acceleration required for our missile
-	--	# to home into our target.
-		latax = RTM_new * N * Vc * LOS_Rate + LOS_Delta * Nt * ( 0.5 * N )
-	end
-	--# Update mutable position objects so we can integrate forward to next frame.
-	msl_pos_previous = msl_pos
-	tgt_pos_previous = tgt_pos
-	
-	--# my job is done, it's now up to EXFLINT.Integrate() to steer the missile.
-	return True
-		
-
-
-
-
-end
 
 
 function init_missile_behaviours(projectile)
@@ -406,11 +330,31 @@ function init_missile_behaviours(projectile)
 	if(not(projectile.shellType.guidance_frequency)) then 
 		projectile.shellType.guidance_frequency = 30
 	end
-	if(projectile.shellType.flight_keypoints) then 
-		local origin_loc = projectile.shellType.cannonLoc
-		for i = 1, #projectile.shellType.flight_keypoints do
-			local new_target_point = projectile.shellType.flight_keypoints[i].Target_Point
-			  projectile.shellType.flight_keypoints[i].Target_Point = 
+	if(not (projectile.shellType.missile_ramp_speed)) then 
+
+		projectile.shellType.missile_ramp_speed = 0.45
+	end
+	if(projectile.flight_keypoints) then 
+		local origin_loc = Transform(
+			projectile.point1,
+			QuatLookAt(
+				VecNormalize(
+					VecSub(
+						tgt_pos,
+						projectile.point1
+						
+						)
+					)
+				)
+			)
+		-- TransformToParentPoint(cannonLoc, Vec(0,-1,0))
+
+		for i = 1, #projectile.flight_keypoints do
+			if(projectile.flight_keypoints[i].target_type == "pos") then
+				local new_target_point = projectile.flight_keypoints[i].Target_Point
+				new_target_point = TransformToParentPoint(origin_loc, projectile.flight_keypoints[i].Target_Point)
+				projectile.flight_keypoints[i].Target_Point = new_target_point
+			end
 		end
 	end
 
@@ -421,8 +365,8 @@ function init_missile_behaviours(projectile)
 		missile_vel = projectile.predictedBulletVelocity,
 		missile_max_vel = projectile.shellType.velocity,
 		missile_min_vel = projectile.shellType.velocity/3,
-		missile_manuever_speed = 0.25,
-		missile_ramp_speed = 0.35,
+		missile_manuever_speed = 0.45,
+		missile_ramp_speed = projectile.shellType.missile_ramp_speed,
 		tgt_pos = tgt_pos ,
 		tgt_pos_previous = nil,
 		target_vel = target_vel,
@@ -434,7 +378,7 @@ function init_missile_behaviours(projectile)
 		kin_sim = projectile.shellType.kinematic_sim,
 		guidance_time = 0,
 		keypoint_index = 1,
-		flight_keypoints = projectile.shellType.flight_keypoints,
+		flight_keypoints = projectile.flight_keypoints,
 
 
 	}
@@ -444,7 +388,13 @@ end
 function compute_CED(dt,projectile) 
 	-- missile.msl_pos
 	projectile.guidance_system.msl_pos = VecCopy(projectile.cannonLoc.pos)
-	projectile.guidance_system =homing_guidance_direct(dt,projectile.guidance_system) 
+	-- DebugWatch("attack pattern", projectile.shellType.attack_pattern)
+	if(projectile.shellType.attack_pattern and projectile.shellType.attack_pattern == "top_down") then 
+
+		projectile.guidance_system =homing_guidance_top_down(dt,projectile.guidance_system)
+	else
+		projectile.guidance_system =homing_guidance_direct(dt,projectile.guidance_system)
+	end 
 	projectile.predictedBulletVelocity = projectile.guidance_system.missile_vel
 end
 
@@ -455,12 +405,28 @@ function homing_guidance_top_down(dt,missile)
 				-- 	completed = true
 				-- }
 
-	local target_vel = Vec(0,0,0)
+	-- for i = 1, #missile.flight_keypoints do
+	-- 	if(missile.flight_keypoints[i].target_type == "pos") then
+	-- 		DebugCross(missile.flight_keypoints[i].Target_Point,0,1,0)
 
+	-- 		DebugLine(missile.flight_keypoints[i].Target_Point,VecAdd(missile.flight_keypoints[i].Target_Point,Vec(0,1,0)),0,1,0)
+	-- 	end
+	-- end
+
+	local target_vel = Vec(0,0,0)
 	local current_keypoint = missile.flight_keypoints[missile.keypoint_index]
+
 	if (current_keypoint.completed) then
 		missile.keypoint_index = missile.keypoint_index +1
-	elseif (missile.keypoint_index < 3 and VecLength(VecSub(missile.msl_pos, current_keypoint.Target_Point))<2) then 
+	elseif (
+		missile.keypoint_index < 3 and 
+		VecLength(
+			VecSub(
+				missile.msl_pos, 
+				current_keypoint.Target_Point
+				)
+			)
+			<VecLength(missile.missile_vel)*.35) then 
 		current_keypoint.completed = true
 	else
 		if(current_keypoint.target_type == "pos") then 
@@ -468,7 +434,7 @@ function homing_guidance_top_down(dt,missile)
 		else
 			target_vel = GetBodyVelocity(missile.target_body)
 			local min, max = GetBodyBounds(missile.target_body)
-			local variabiity = 0.25
+			local variabiity = 0.6
 			local boundsSize = VecSub(max, min)
 			local center = VecLerp(min, max, 0.5+((variabiity *math.random())-variabiity*.5))
 			missile.tgt_pos  = VecAdd(GetBodyTransform(missile.target_body).pos,TransformToLocalPoint(GetBodyTransform(missile.target_body),center))
@@ -485,7 +451,7 @@ function homing_guidance_top_down(dt,missile)
 	-- missile.tgt_pos  = VecAdd(GetBodyTransform(missile.target_body).pos,TransformToLocalPoint(GetBodyTransform(missile.target_body),center))
 
 	-- missile.tgt_pos = GetBodyTransform(missile.target_body).pos
-	DebugWatch("guidance target_body:",missile.target_body)
+	-- DebugWatch("guidance target_body:",missile.target_body)
 	missile = guidance_pattern_0903(
 		dt,
 		missile,
@@ -500,14 +466,14 @@ function homing_guidance_direct(dt,missile)
 
 	local min, max = GetBodyBounds(missile.target_body)
 	local boundsSize = VecSub(max, min)
-	local variabiity = 0.25
+	local variabiity = 0.6
 	-- local center = VecLerp(min, max, 0.5)
 
 	local center = VecLerp(min, max, 0.5+((variabiity *math.random())-variabiity*.5))
 	missile.tgt_pos  = VecAdd(GetBodyTransform(missile.target_body).pos,TransformToLocalPoint(GetBodyTransform(missile.target_body),center))
 
 	-- missile.tgt_pos = GetBodyTransform(missile.target_body).pos
-	DebugWatch("guidance target_body:",missile.target_body)
+	-- DebugWatch("guidance target_body:",missile.target_body)
 	missile = guidance_pattern_0903(
 		dt,
 		missile,
@@ -583,10 +549,10 @@ function guidance_pattern_0903(
 
 
 			--- draw lines for trajectory planning
-			DrawLine(missile.tgt_pos, VecAdd(missile.tgt_pos,target_vel), 0, 0, 1)
-			DrawLine(VecAdd(missile.tgt_pos,target_vel), missile.msl_pos, 0, 1, 1)
-			DrawLine(missile.msl_pos,new_msl_pos, print_colour[1], print_colour[2], print_colour[3])
-			DrawLine(missile.msl_pos, VecAdd(missile.msl_pos,Vec(0,1,0)), print_colour[1], print_colour[2], print_colour[3])
+			-- DrawLine(missile.tgt_pos, VecAdd(missile.tgt_pos,target_vel), 0, 0, 1)
+			-- DrawLine(VecAdd(missile.tgt_pos,target_vel), missile.msl_pos, 0, 1, 1)
+			-- DrawLine(missile.msl_pos,new_msl_pos, print_colour[1], print_colour[2], print_colour[3])
+			-- DrawLine(missile.msl_pos, VecAdd(missile.msl_pos,Vec(0,1,0)), print_colour[1], print_colour[2], print_colour[3])
 			missile.msl_pos = new_msl_pos	
 
 			missile.last_target_vel = target_vel
@@ -687,10 +653,10 @@ function flight_controller_X(current_vel, adjustment_vel,min, max,Nt)
 		current_vel = VecScale(current_vel,clamp(max/VecLength(current_vel),0,Nt))
 	end
 
-	DebugWatch("max vel",max)
-	DebugWatch("current vel",current_vel)
-	DebugWatch("vel legth ",VecLength(current_vel) )
-	DebugWatch("adjustment_vel",adjustment_vel)
+	-- DebugWatch("max vel",max)
+	-- DebugWatch("current vel",current_vel)
+	-- DebugWatch("vel legth ",VecLength(current_vel) )
+	-- DebugWatch("adjustment_vel",adjustment_vel)
 
 	adjustment_vel = VecScale(adjustment_vel,clamp(Nt/VecLength(adjustment_vel),0,1))
 	-- if(VecLenth(adjustment_vel)

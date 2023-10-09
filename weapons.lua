@@ -49,6 +49,7 @@ weaponOverrides = {
 					aimForwards				= "aimForwards",
 					aimReticle 				= "aimReticle",
 					zero_range				= "zero_range",
+					zeroing 				= "zeroing",
 					highVelocityShells		= "highVelocityShells",
 					cannonBlast 			= "cannonBlast",
 					RPM 					= "RPM",
@@ -67,6 +68,7 @@ weaponOverrides = {
 					tailOffSound	 		= "tailOffSound",
 					reloadSound 			= "reloadSound",
 					reloadPlayOnce 			= "reloadPlayOnce",
+					custom_sight_script     = "custom_sight_script"
 
 }
 

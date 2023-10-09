@@ -143,7 +143,7 @@ function projectileOperations(projectile,dt )
 		end
 -- guided or launcher type rockets 
 
-		if(projectile.shellType.launcher and projectile.shellType.launcher == "guided") then
+		if(projectile.shellType.launcher and projectile.shellType.launcher == "guided" and not projectile.no_target) then
 			if(projectile.shellType.guidance and projectile.shellType.guidance == "homing") then 
 				homing_missile_computations(projectile,dt)
 			else
@@ -437,20 +437,21 @@ function homing_missile_computations(projectile,dt)
 
 	end
 
-	if(projectile.shellType.attack_pattern and projectile.shellType.attack_pattern == "top_down") then 
-		if(projectile.homing_computations.attack_pattern_set) then 
+	-- if(projectile.shellType.attack_pattern and projectile.shellType.attack_pattern == "top_down") then 
+		
+	-- 	if(projectile.homing_computations.attack_pattern_set) then 
 			
 
-		else
-			-- projectile.climb_angle =math.atan2(projectile.shellType.peak_distance,projectile.shellType.max_climb) * 180 / math.pi
-			-- projectile.homing_computations.rate_of_climb = (
-			-- 	 projectile.shellType.velocity * math.sin (projectile.climb_angle)
-			-- 	) 
-			projectile.homing_computations.attack_pattern_set = true
-		end
-	else
+	-- 	else
+	-- 		-- projectile.climb_angle =math.atan2(projectile.shellType.peak_distance,projectile.shellType.max_climb) * 180 / math.pi
+	-- 		-- projectile.homing_computations.rate_of_climb = (
+	-- 		-- 	 projectile.shellType.velocity * math.sin (projectile.climb_angle)
+	-- 		-- 	) 
+	-- 		projectile.homing_computations.attack_pattern_set = true
+	-- 	end
+	-- else
 		compute_CED(dt,projectile) 
-	end
+	-- end
 
 end
 
@@ -626,7 +627,7 @@ function pushProjectile(cannonLoc,gun,intel_payload)
 								GetVehicleBody(vehicle.id)),GetTimeStep()))	
 	---
 				-- local predictedBulletVelocity = VecScale(direction,velocity)
-
+	DebugLine(point1,TransformToParentPoint(cannonLoc, Vec(0,-100,0)),1,0,0)
 	projectileHandler.shells[projectileHandler.shellNum] = deepcopy(projectileHandler.defaultShell)
 
 	loadedShell 				= projectileHandler.shells[projectileHandler.shellNum] 
@@ -713,10 +714,14 @@ function pre_mission_calibration(loadedShell,intel_payload)
 			loadedShell.target_body =  intel_payload.target_body 
 			if(loadedShell.shellType.attack_pattern == "top_down") then
 				loadedShell.flight_path,loadedShell.flight_keypoints = generate_top_down_pattern(loadedShell)
+			
+			else
+				loadedShell.shellType.attack_pattern = "direct"
 			end
 		end
 
-
+	elseif(loadedShell.shellType.guidance == "homing") then 
+		loadedShell.no_target = true
 
 	end
 	return loadedShell
