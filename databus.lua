@@ -24,6 +24,10 @@ end
 
 
 function databus:update_weapon_information(gun)
+
+	local currentMagazine = gun.magazines[gun.loadedMagazine].magazinesAmmo[gun.magazines[gun.loadedMagazine].currentMagazine]
 	SetTag(gun.id,"avf.databus.loaded_magazine",gun.loadedMagazine)
+
+	SetTag(gun.id,"avf.databus.ammo_count",currentMagazine.AmmoCount)
 
 end

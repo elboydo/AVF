@@ -1,5 +1,5 @@
 
-function addGun(gunJoint,attatchedShape,turretJoint)
+function addGun(gunJoint,attatchedShape,turretJoint,turret_rot)
 	if unexpected_condition then error() end
 	
 	local gun = GetJointOtherShape(gunJoint, attatchedShape)
@@ -98,7 +98,11 @@ function addGun(gunJoint,attatchedShape,turretJoint)
 		errorMessages = errorMessages..retVal.."\n"
 	end
 
+
 	-- loadShells(vehicleFeatures.weapons[group][index])
+
+
+	-- turret and weapon rotation values
 
 	if(turretJoint) then
 		vehicleFeatures.weapons[group][index].turretJoint = turretJoint
@@ -110,7 +114,35 @@ function addGun(gunJoint,attatchedShape,turretJoint)
 	vehicleFeatures.weapons[group][index].elevationMin = -min
 	vehicleFeatures.weapons[group][index].elevationMax = -max
 	vehicleFeatures.weapons[group][index].rangeCalc = (-max-min) / vehicleFeatures.weapons[group][index].gunRange
-	
+	local turret_min, turret_max = GetJointLimits(turretJoint)
+	if(turret_min ==0 and turret_max ==0 ) then 
+		turret_min = -180
+		turret_max = 180
+	end
+	vehicleFeatures.weapons[group][index].turret_min = turret_min
+	vehicleFeatures.weapons[group][index].turret_max = turret_max
+	vehicleFeatures.weapons[group][index].turret_rotation_rate = turret_rot
+
+
+
+	if(not vehicleFeatures.weapons[group][index].elevationSpeed) then
+		vehicleFeatures.weapons[group][index].elevationSpeed = 3
+	end
+
+	if(vehicleFeatures.weapons[group][index].elevation_rate) then
+		vehicleFeatures.weapons[group][index].elevationRate = math.rad(vehicleFeatures.weapons[group][index].elevation_rate)
+	else
+		vehicleFeatures.weapons[group][index].elevationRate = math.rad(80)--vehicleFeatures.weapons[group][index].elevationSpeed
+	end
+
+	local commander_view_y = GetJointMovement(gunJoint)
+	local commander_view_x = GetJointMovement(turretJoint)
+	vehicleFeatures.weapons[group][index].commander_view_x = commander_view_x
+	vehicleFeatures.weapons[group][index].commander_view_y = commander_view_y
+
+	vehicleFeatures.weapons[group][index].commander_y_rate = (math.deg(vehicleFeatures.weapons[group][index].elevationRate)/360) 
+	vehicleFeatures.weapons[group][index].commander_x_rate = (math.deg(turret_rot)/360)
+
 	-- removed tags for weapons for the time being
 
 	if(gun_trigger==nil) then 
@@ -127,11 +159,6 @@ function addGun(gunJoint,attatchedShape,turretJoint)
 	vehicleFeatures.weapons[group][index].currentReload = 0
 	vehicleFeatures.weapons[group][index].timeToFire = 0
 	vehicleFeatures.weapons[group][index].cycleTime = 60 / vehicleFeatures.weapons[group][index].RPM 
-
-
-	if(not vehicleFeatures.weapons[group][index].elevationSpeed) then
-		vehicleFeatures.weapons[group][index].elevationSpeed = 1
-	end
 
 	if (not vehicleFeatures.weapons[group][index].sight[1].bias)then
 		vehicleFeatures.weapons[group][index].sight[1].bias = 1
@@ -270,6 +297,9 @@ function addCoax(gunJoint,attatchedShape,turretJoint,base_turret)
 	if(not vehicleFeatures.weapons[group][index].elevationSpeed) then
 		vehicleFeatures.weapons[group][index].elevationSpeed = 1
 	end
+
+	vehicleFeatures.weapons[group][index].elevationRate =vehicleFeatures.weapons[group][index].elevationSpeed *  globalConfig.rpm_to_rad
+
 	if (not vehicleFeatures.weapons[group][index].sight[1].bias)then
 		vehicleFeatures.weapons[group][index].sight[1].bias = 1
 	end
@@ -631,6 +661,13 @@ function traverseTurret(turretJoint,attatchedShape)
 	vehicleFeatures.turrets[group][idNo].id 	= turret
 	vehicleFeatures.turrets[group][idNo].turretJoint  = turretJoint	
 
+	if(HasTag(turret,"traverse_rate")) then 
+		vehicleFeatures.turrets[group][idNo].traverse_rate = GetTagValue(turret,"traverse_rate")
+	else
+		vehicleFeatures.turrets[group][idNo].traverse_rate = 30
+	end
+	local rotation_rate = math.rad(vehicleFeatures.turrets[group][idNo].traverse_rate)
+	vehicleFeatures.turrets[group][idNo].rotation_rate =rotation_rate
 	local shapes = GetBodyShapes(GetShapeBody(turret))
 	for i=1,#shapes do 
 
@@ -648,7 +685,7 @@ function traverseTurret(turretJoint,attatchedShape)
 					DebugPrint("found component: "..val2)
 				end
 				if val2=="gunJoint" then
-						status,retVal = pcall(addGun, joints[j], turret,turretJoint);
+						status,retVal = pcall(addGun, joints[j], turret,turretJoint,rotation_rate);
 						if status then 
 							-- utils.printStr("no errors")
 						else
@@ -673,6 +710,9 @@ function traverseTurret(turretJoint,attatchedShape)
 		end
 	end
 	addSearchlights(turret)
+
+
+
 
 	vehicle.shapes[#vehicle.shapes+1] = turret
 

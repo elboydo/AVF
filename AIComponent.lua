@@ -1061,7 +1061,9 @@ function AVF_ai:gunLaying(ai,gun,targetPos)
 	end 
 
 	-- bias = bias * math.random(-1,1)/5
-	SetJointMotor(gun.gunJoint, dir*bias)
+
+	local rotation_force = GetBodyMass(GetShapeBody(gun.id))
+	SetJointMotor(gun.gunJoint, dir*bias,rotation_force)
 	
 end
 
@@ -1173,17 +1175,19 @@ function AVF_ai:turretRotatation(ai,turret,turretJoint,targetPos)
 		-- 	"\ndown: "..
 		-- 	down)		
 		local bias = 0.05 * ai.precision
+
+		local rotation_force = GetBodyMass(GetShapeBody(turret))
 		bias = bias * math.random(-1,1)
 		if(forward<(1-bias)) then
 			if(left>right+bias) then
-				SetJointMotor(turretJoint, 0.1+1*left)
+				SetJointMotor(turretJoint, 0.1+1*left,rotation_force)
 			elseif(right>left+bias) then
-				SetJointMotor(turretJoint, -.1+(-1*right))
+				SetJointMotor(turretJoint, -.1+(-1*right),rotation_force)
 			else
-				SetJointMotor(turretJoint, 0)
+				SetJointMotor(turretJoint, 0,rotation_force)
 			end
 		else
-			SetJointMotor(turretJoint, 0)
+			SetJointMotor(turretJoint, 0,rotation_force)
 		end 
 
 	end

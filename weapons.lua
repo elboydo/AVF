@@ -60,6 +60,7 @@ weaponOverrides = {
 					gunRange				= "gunRange",
 					gunBias 				= "gunBias",
 					elevationSpeed			= "elevationSpeed",
+					elevation_rate			= "elevation_rate",
 					smokeFactor 			= "smokeFactor",
 					smokeMulti				= "smokeMulti",
 					soundFile				= "soundFile",

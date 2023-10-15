@@ -356,6 +356,7 @@ globalConfig = {
 	penCheck = 0.01,
 	penIteration = 0.1,
 	pen_check_iterations = 100,
+	rpm_to_rad = 0.1047,
 	HEATRange = 3,
 	gravity = Vec(0,-10,0),
 	impulse_coef = 0.002,
@@ -1331,11 +1332,11 @@ end
 
 function physics_player_update(dt)
 
-					if(vehicle.sniperMode) then
-						handleSniperMode(dt)
-					else
-						handleGunMovement(dt)
-					end
+	if(vehicle.sniperMode) then
+		handleSniperMode(dt)
+	else
+		handleGunMovement(dt)
+	end
 
 
 end
@@ -1389,6 +1390,18 @@ function handleGunMovement(dt)
 		end
 	end
 	 
+end
+
+function set_commander_view_x_y()
+
+	local gunGroup = vehicleFeatures.weapons[vehicleFeatures.equippedGroup]
+
+	local focusGun = gunGroup[1]	
+	local min, max = GetJointLimits(focusGun.gunJoint)
+	focusGun.commander_view_y = ((GetJointMovement(focusGun.gunJoint) - min)/(max -min)) 
+	focusGun.commander_view_x = ((GetJointMovement(focusGun.turretJoint) - focusGun.turret_min)/(focusGun.turret_max -focusGun.turret_min)) 
+
+	
 end
 
 
@@ -1512,63 +1525,190 @@ function handleSniperMode(dt )
 	mouseY = -mouseY
 
 
+
+	-- rough xy formula is (abs(max)+abs(min)) * (0 to 1) - min
+	-- inverse is max / (current+min)
+	-- assume always sub the max (which is the positive number and invert then angle will be correct)
+		-- add lowest number to everything so it's all positive then do opposite 
+			-- if both limits positive then add value at the end
+
+	-- do add 360 ,then
+
+	-- abs + abs  
+
+-- understand that this provides 0 as 1 on the axis
+--- fuck it, let'sjust do  prior behaviour but improve the residua optics focusGun
+	local min, max = GetJointLimits(focusGun.gunJoint)
+	local current = GetJointMovement(focusGun.gunJoint)
+	local gun_percentage = ((current - min)/(max -min))
+
+	local gun_target_angle = (gun_percentage *(max -min))+min
+	DebugWatch("gun movement gun_percentage ",gun_percentage)
+	DebugWatch("gun turret rotation min ",min)
+	DebugWatch("gun turret rotation max ",max)
+	DebugWatch("gun turret rotation current ",current)
+	DebugWatch("gun_target_angle",gun_target_angle)
+
+	
+	local zoom_modifier = 1 - clamp(0,1,(vehicle.ZOOMLEVEL / (vehicle.ZOOMMAX*1.5)))
+	local view_y = (focusGun.commander_view_y + (focusGun.commander_y_rate*dt * utils.sign(-mouseY))*zoom_modifier)
+	if(min == -180 and max == 180 ) then
+		view_y = view_y %1
+	end
+	local view_x = (focusGun.commander_view_x + (focusGun.commander_x_rate*dt * utils.sign(-mouseX))*zoom_modifier)
+	if(focusGun.turret_min == -180 and focusGun.turret_max  == 180 ) then
+		view_x = view_x %1
+	end
+	focusGun.commander_view_x = clamp(0,1,view_x)
+	focusGun.commander_view_y = clamp(0,1,view_y)
+	DebugWatch("commander_x_rate",focusGun.commander_x_rate)
+	DebugWatch("commander_y_rate",focusGun.commander_y_rate)
+	DebugWatch("commander_view_x",focusGun.commander_view_x)
+	DebugWatch("commander_view_y",focusGun.commander_view_y)
+	local target_x = focusGun.commander_view_x * (focusGun.turret_max - focusGun.turret_min) + focusGun.turret_min
+	local target_y = focusGun.commander_view_y * (max - min) + min
+	DebugWatch("target_y",target_y)
+	DebugWatch("target_x",target_x)
+	-- DebugWatch("gun gun.elevationSpeed",focusGun.elevationSpeed)
+	-- SetJointMotorTarget(focusGun.turretJoint, target_x, focusGun.turret_rotation_rate)
+	-- SetJointMotorTarget(focusGun.gunJoint, target_y, focusGun.elevationRate)
+	SetJointMotorTarget(focusGun.turretJoint, target_x, focusGun.turret_rotation_rate)
+	SetJointMotorTarget(focusGun.gunJoint, target_y, focusGun.elevationRate)
+
 	if(debugMode)then
 		DebugWatch("MouseX",mouseX)
 		DebugWatch("MouseY",mouseY)
 	end
-
-		-- if(#vehicleFeatures.turrets.mainTurret>0)then
-		-- 	if(math.abs(mouseX)>deadzone) then
-		-- 			local turn_force = 1
-		-- 			turret_rotateSpeed = rotateSpeed*.6
-		-- 			SetJointMotor(vehicleFeatures.turrets.mainTurret[1].turretJoint, (turn_force*utils.sign(mouseX))*turret_rotateSpeed)
-		-- 	else
-		-- 		SetJointMotor(vehicleFeatures.turrets.mainTurret[1].turretJoint, 0)
-		-- 	end 
-		-- end
-
-
-		for key,gun in pairs(gunGroup) do
-
-			local turret_rotation_force = GetBodyMass(GetShapeBody(gun.parent_shape))
-			if(gun.turretJoint~=nil) then 
-				if(math.abs(mouseX)>deadzone) then
-						local turn_force = 1
-						turret_rotateSpeed = rotateSpeed*.6
-						SetJointMotor(gun.turretJoint, (turn_force*utils.sign(mouseX))*turret_rotateSpeed,turret_rotation_force)
-				else
-					SetJointMotor(gun.turretJoint, 0,turret_rotation_force)
-				end
-			end
-
-
-			local rotation_force = GetBodyMass(GetShapeBody(gun.id))
-			if(gun.locked) then
-				handleGunMovement(dt)
-			
-			elseif(math.abs(mouseY)>deadzone) then
-				if( gun.elevationSpeed) then
-					local pre = GetJointMovement(gun.gunJoint)
-					SetJointMotor(gun.gunJoint, (gun.elevationSpeed*utils.sign(mouseY))*rotateSpeed,rotation_force)
-					gun.moved = true
-				else
-					SetJointMotor(gun.gunJoint, (1*utils.sign(mouseY))*rotateSpeed,rotation_force)
-					gun.moved = true
-				end
-			else
-				if(gun.currentGunjointAngle) then
-					
-					local bias = 0.25
-					if(gun.elevationSpeed) then
-						bias = gun.elevationSpeed/10
+	for key,gun in pairs(gunGroup) do
+			if(gun.id ~= focusGun.id) then 
+				local turret_rotation_force = GetBodyMass(GetShapeBody(gun.parent_shape))
+				if(gun.turretJoint~=nil) then 
+					local min, max = GetJointLimits(gun.turretJoint)
+					local current = GetJointMovement(gun.turretJoint)
+					-- DebugWatch("gun turret rotation min ",min)
+					-- DebugWatch("gun turret rotation max ",max)
+					-- DebugWatch("gun turret rotation current ",current)
+					if(math.abs(mouseX)>deadzone) then
+							local turn_force = 1
+							turret_rotateSpeed = rotateSpeed*.6
+							SetJointMotor(gun.turretJoint, (turn_force*utils.sign(mouseX))*turret_rotateSpeed,turret_rotation_force)
+					else
+						SetJointMotor(gun.turretJoint, 0,turret_rotation_force)
 					end
-					SetJointMotor(gun.gunJoint, retainGunAngle(gun)*bias,rotation_force)
-				else
-					SetJointMotor(gun.gunJoint, 0,rotation_force)
 				end
-			end 
+					
+				local rotation_force = GetBodyMass(GetShapeBody(gun.id))
+				if(gun.locked) then
+					handleGunMovement(dt)
+				
+				elseif(math.abs(mouseY)>deadzone) then
+					if( gun.elevationSpeed) then
+						local pre = GetJointMovement(gun.gunJoint)
+						SetJointMotor(gun.gunJoint, (gun.elevationSpeed*utils.sign(mouseY))*rotateSpeed,rotation_force)
+						gun.moved = true
+					else
+						SetJointMotor(gun.gunJoint, (1*utils.sign(mouseY))*rotateSpeed,rotation_force)
+						gun.moved = true
+					end
+				else
+					if(gun.currentGunjointAngle) then
+						
+						local bias = 0.25
+						if(gun.elevationSpeed) then
+							bias = gun.elevationSpeed/10
+						end
+						SetJointMotor(gun.gunJoint, retainGunAngle(gun)*bias,rotation_force)
+					else
+						SetJointMotor(gun.gunJoint, 0,rotation_force)
+					end
+				end 
+			end
 		end
 	-- SetCameraTransform(commanderPos, vehicle.sniperFOV*ZOOMVALUE)
+
+	-- 	for key,gun in pairs(gunGroup) do
+
+	-- 		local turret_rotation_force = GetBodyMass(GetShapeBody(gun.parent_shape))
+	-- 		if(gun.turretJoint~=nil) then 
+	-- 			local min, max = GetJointLimits(gun.turretJoint)
+	-- 			local current = GetJointMovement(gun.turretJoint)
+	-- 			-- DebugWatch("gun turret rotation min ",min)
+	-- 			-- DebugWatch("gun turret rotation max ",max)
+	-- 			-- DebugWatch("gun turret rotation current ",current)
+	-- 			if(math.abs(mouseX)>deadzone) then
+	-- 					local turn_force = 1
+	-- 					turret_rotateSpeed = rotateSpeed*.6
+	-- 					SetJointMotor(gun.turretJoint, (turn_force*utils.sign(mouseX))*turret_rotateSpeed,turret_rotation_force)
+	-- 			else
+	-- 				SetJointMotor(gun.turretJoint, 0,turret_rotation_force)
+	-- 			end
+	-- 		end
+
+
+	-- 		-- -- rough xy formula is (abs(max)+abs(min)) * (0 to 1) - min
+	-- 		-- -- inverse is max / (current+min)
+	-- 		-- -- assume always sub the max (which is the positive number and invert then angle will be correct)
+	-- 		-- 	-- add lowest number to everything so it's all positive then do opposite 
+	-- 		-- 		-- if both limits positive then add value at the end
+
+	-- 		-- -- do add 360 ,then
+
+	-- 		-- -- abs + abs  
+
+	-- 		-- -- understand that this provides 0 as 1 on the axis
+	-- 		-- --- fuck it, let'sjust do  prior behaviour but improve the residua optics focusGun
+	-- 		-- 	local min, max = GetJointLimits(gun.gunJoint)
+	-- 		-- 	local current = GetJointMovement(gun.gunJoint)
+	-- 		-- 	local gun_percentage = ((current - min)/(max -min))
+
+ -- 		-- 		local gun_target_angle = (gun_percentage *(max -min))+min
+	-- 		-- 	DebugWatch("gun movement gun_percentage ",gun_percentage)
+	-- 		-- 	DebugWatch("gun turret rotation min ",min)
+	-- 		-- 	DebugWatch("gun turret rotation max ",max)
+	-- 		-- DebugWatch("gun turret rotation current ",current)
+	-- 		-- DebugWatch("gun_target_angle",gun_target_angle)
+	-- 			-- DebugWatch("commander view x",((current-min)
+	-- 			-- DebugWatch("commander view y",)
+				
+	-- 		local rotation_force = GetBodyMass(GetShapeBody(gun.id))
+	-- 		if(gun.locked) then
+	-- 			handleGunMovement(dt)
+			
+	-- 		elseif(math.abs(mouseY)>deadzone) then
+	-- 			if( gun.elevationSpeed) then
+	-- 				local pre = GetJointMovement(gun.gunJoint)
+	-- 				SetJointMotor(gun.gunJoint, (gun.elevationSpeed*utils.sign(mouseY))*rotateSpeed,rotation_force)
+	-- 				gun.moved = true
+	-- 			else
+	-- 				SetJointMotor(gun.gunJoint, (1*utils.sign(mouseY))*rotateSpeed,rotation_force)
+	-- 				gun.moved = true
+	-- 			end
+	-- 		else
+	-- 			if(gun.currentGunjointAngle) then
+					
+	-- 				local bias = 0.25
+	-- 				if(gun.elevationSpeed) then
+	-- 					bias = gun.elevationSpeed/10
+	-- 				end
+	-- 				SetJointMotor(gun.gunJoint, retainGunAngle(gun)*bias,rotation_force)
+	-- 			else
+	-- 				SetJointMotor(gun.gunJoint, 0,rotation_force)
+	-- 			end
+	-- 		end 
+	-- 	end
+	-- -- SetCameraTransform(commanderPos, vehicle.sniperFOV*ZOOMVALUE)
+end
+
+
+function one_d_distance(num_1,num_2) 
+if(num_1 > num_2) then
+	return num_1
+elseif (num_1<num_2) then 
+
+else
+	return 0
+end
+
 end
 
 
@@ -3188,6 +3328,31 @@ function processGunRecoil(gun)
     local direction = VecSub(cannonLoc.pos,fwdPos)
     marker_1 = cannonLoc.pos
     marker_2 = fwdPos
+
+    local gun_com = GetBodyCenterOfMass(GetShapeBody(gun.id))
+    local gun_com_offset = 
+    	VecSub(
+			cannonLocpos,
+			TransformToParentPoint(cannonLoc,gun_com)
+    		)[2]
+    	
+   	-- DebugWatch("com_offset",gun_com_offset)
+
+	local gun_mass = GetBodyMass(GetShapeBody(gun.id))
+	local gun_parent_mass = GetBodyMass(GetShapeBody(gun.parent_shape))
+	local bullet_grain = 64
+	-- DebugWatch("gun_mass",gun_mass)
+	-- DebugWatch("gun_parent_mass",gun_parent_mass)
+	-- DebugWatch("modulo",-3%30)
+
+	local mass = gun.magazines[gun.loadedMagazine].CfgAmmo.caliber * .01
+	local gun_vel = gun.magazines[gun.loadedMagazine].CfgAmmo.velocity
+	gun_vel = gun_vel 
+	-- recoil = (((.5 * mass * gun_vel)*0.01)*recoil)
+	recoil = (mass /(gun_mass+gun_parent_mass))*gun_vel*recoil
+	local original_recoil = (mass /gun_mass)*gun_vel*recoil
+	-- DebugWatch("recoil",recoil)
+	-- DebugWatch("original_recoil",original_recoil)
 	local scaled = VecScale(VecNormalize(direction),recoil)
 	ApplyBodyImpulse(GetShapeBody(gun.id), cannonLoc.pos, scaled)
 
@@ -3704,7 +3869,8 @@ end
 function turretRotatation(turret,turretJoint,aim_gun,gun)
 	if unexpected_condition then error() end
 	if(turret)then 
-		local rotation_force = GetBodyMass(GetShapeBody(turret.id))
+		local core_turret = turret 
+		local rotation_force = GetBodyMass(GetShapeBody(turret.id))*1.3
 		-- DebugWatch("turret weight",rotation_force)
 		if( turret.locked) then
 			local targetRotation = lockedTurretAngle(turret)
@@ -3728,13 +3894,13 @@ function turretRotatation(turret,turretJoint,aim_gun,gun)
 			-- -- blue = y axis 
 			-- draw_line_from_transform(turretTransform,0,-.1,0,	0,0,1)
 
-			local turret = turret.id
-			local forward = turretAngle(0,1,0,turret,aim_gun,gun)
-			local back 	  = turretAngle(0,-1,0,turret,aim_gun,gun) 
-			local left 	  = turretAngle(-1,0,0,turret,aim_gun,gun)
-			local right   = turretAngle(1,0,0,turret,aim_gun,gun)
-			local up 	  = turretAngle(0,0,1,turret,aim_gun,gun)
-			local down 	  = turretAngle(0,0,-1,turret,aim_gun,gun)
+			-- local turret = turret.id
+			local forward = turretAngle(0,1,0,turret.id,aim_gun,gun)
+			local back 	  = turretAngle(0,-1,0,turret.id,aim_gun,gun) 
+			local left 	  = turretAngle(-1,0,0,turret.id,aim_gun,gun)
+			local right   = turretAngle(1,0,0,turret.id,aim_gun,gun)
+			local up 	  = turretAngle(0,0,1,turret.id,aim_gun,gun)
+			local down 	  = turretAngle(0,0,-1,turret.id,aim_gun,gun)
 
 			-- DebugWatch("red = right",right)
 			-- DebugWatch("green = down",down)
@@ -3760,7 +3926,20 @@ function turretRotatation(turret,turretJoint,aim_gun,gun)
 			local min_move = 0.1
 			if(forward<(1-bias)) then
 				if(math.abs(target_move)>bias) then
-					SetJointMotor(turretJoint, clamp(-1,1,(min_move*math.sign(target_move))+1.5*(target_move)),rotation_force)
+					SetJointMotor(
+						turretJoint, 
+						gun.turret_rotation_rate* clamp(-1,1,target_move+ 0.1 * utils.sign(target_move)),
+						rotation_force)
+					
+ 
+
+					-- SetJointMotor(
+					-- 	turretJoint, 
+					-- 	clamp(
+					-- 		-1,
+					-- 		1,
+					-- 		(min_move*math.sign(target_move))+1.5*(target_move)),
+					-- 	rotation_force)
 				-- 
 				-- if(left>right+bias) then
 				-- 	SetJointMotor(turretJoint, clamp(0,1,1.5*(left-right)))
@@ -3870,22 +4049,46 @@ function gunLaying(gun,barrelCoords,targetPos)
 	local bias = 0.05
 	gun.aimed = false
 
-	-- DebugWatch("gun up: ",
-	-- 		up)
-	-- DebugWatch("gun down: ",
-	-- 		down)
+	DebugWatch("gun up: ",
+			up)
+	DebugWatch("gun down: ",
+			down)
+	DebugWatch("gun weight: ",
+			up-down)
 
 	local dir = 0
+	local dir_impulse = 0 
 	if(up < down-bias*0.25)then  -- and up-bias*.5>0) then 
 		dir = 1
+		dir_impulse = down
 	elseif(up > down+bias*0.25 )then  --and down-bias*.5>0) then
 		dir = -1
+		dir_impulse = up
 
 	end 
 	-- DebugWatch("dir",dir)
 
 	local rotation_force = GetBodyMass(GetShapeBody(gun.id))
-	SetJointMotor(gun.gunJoint, dir*(bias*10),rotation_force)
+
+	
+	-- gun.commander_view_x = clamp(0,1,(focusGun.commander_view_x + (focusGun.commander_x_rate*dt * utils.sign(-mouseX))*zoom_modifier)%1)
+	-- gun.commander_view_y = clamp(0,1,(focusGun.commander_view_y + (focusGun.commander_y_rate*dt * utils.sign(-mouseY))*zoom_modifier)%1)
+	-- DebugWatch("commander_x_rate",focusGun.commander_x_rate)
+	-- DebugWatch("commander_y_rate",focusGun.commander_y_rate)
+	-- DebugWatch("commander_view_x",focusGun.commander_view_x)
+	-- DebugWatch("commander_view_y",focusGun.commander_view_y)
+	-- local target_x = focusGun.commander_view_x * (focusGun.turret_max - focusGun.turret_min) + focusGun.turret_min
+	-- local target_y = focusGun.commander_view_y * (max - min) + min
+	-- DebugWatch("target_y",target_y)
+	-- DebugWatch("target_x",target_x)
+	-- -- DebugWatch("gun gun.elevationSpeed",focusGun.elevationSpeed)
+	-- SetJointMotorTarget(focusGun.turretJoint, target_x, focusGun.turret_rotation_rate)
+	-- SetJointMotorTarget(focusGun.gunJoint, target_y, focusGun.elevationRate)
+
+
+ --    local rot_speed = gun.elevationRate * GetTimeStep()
+	-- -- SetJointMotor(gun.gunJoint, dir*(bias*10),rotation_force)
+	-- SetJointMotor(gun.gunJoint, dir*rot_speed,rotation_force)
 end
 
 function gunAngle(x,y,z,gun,targetPos)
@@ -4216,9 +4419,12 @@ function handleInputs(dt)
 	end 
 	if(InputPressed(armedVehicleControls.changeWeapons))then 
 		local tstStrn=""
-
 		vehicleFeatures.currentGroup = (vehicleFeatures.currentGroup%#vehicleFeatures.validGroups)+1
 		vehicleFeatures.equippedGroup = vehicleFeatures.validGroups[vehicleFeatures.currentGroup]
+
+		if (vehicle.sniperMode	) then
+			set_commander_view_x_y()
+		end
 		-- utils.printStr(#vehicleFeatures.weapons.secondary.."\ntest string ="..tstStrn)
 		-- utils.printStr(vehicleFeatures.equippedGroup.." equipped!")--.."\n"..tstStrn.." | "..vehicleFeatures.currentGroup..vehicleFeatures.validGroups[vehicleFeatures.currentGroup])
 	end
@@ -4268,6 +4474,7 @@ function handleInputs(dt)
 		vehicle.sniperMode = not vehicle.sniperMode
 		vehicle.last_cam_pos = nil
 
+		set_commander_view_x_y()
 		vehicle.last_mouse_shift = {0,0}
 	end
 
