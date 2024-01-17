@@ -81,22 +81,29 @@ function addGun(gunJoint,attatchedShape,turretJoint,turret_rot)
 	vehicleFeatures.weapons[group][index].id = gun
 	vehicleFeatures.weapons[group][index].parent_vehicle = vehicle.id
 	vehicleFeatures.weapons[group][index].parent_shape = attatchedShape
-	local status,retVal = pcall(gunCustomization,(vehicleFeatures.weapons[group][index]));
-	if status then 
-		-- DebugPrint("no errors")
+	if(DEBUG_CODE) then 
+		local status,retVal = pcall(gunCustomization,(vehicleFeatures.weapons[group][index]));
+		if status then 
+			-- DebugPrint("no errors")
+		else
+			DebugPrint(retVal)
+		end
+
+
+		status,retVal = pcall(loadShells,(vehicleFeatures.weapons[group][index]));
+		if status then 
+			-- utils.printStr("no errors")
+		else
+			DebugPrint(retVal)
+			errorMessages = errorMessages..retVal.."\n"
+		end
 	else
-		DebugPrint(retVal)
+		gunCustomization(vehicleFeatures.weapons[group][index])
+		loadShells(vehicleFeatures.weapons[group][index])
 	end
 
 	-- gunCustomization(vehicleFeatures.weapons[group][index])
 
-	status,retVal = pcall(loadShells,(vehicleFeatures.weapons[group][index]));
-	if status then 
-		-- utils.printStr("no errors")
-	else
-		DebugPrint(retVal)
-		errorMessages = errorMessages..retVal.."\n"
-	end
 
 
 	-- loadShells(vehicleFeatures.weapons[group][index])
@@ -121,6 +128,9 @@ function addGun(gunJoint,attatchedShape,turretJoint,turret_rot)
 	end
 	vehicleFeatures.weapons[group][index].turret_min = turret_min
 	vehicleFeatures.weapons[group][index].turret_max = turret_max
+	if(not turret_rot) then
+		turret_rot = 1
+	end
 	vehicleFeatures.weapons[group][index].turret_rotation_rate = turret_rot
 
 
@@ -143,6 +153,10 @@ function addGun(gunJoint,attatchedShape,turretJoint,turret_rot)
 	vehicleFeatures.weapons[group][index].commander_y_rate = (math.deg(vehicleFeatures.weapons[group][index].elevationRate)/360) 
 	vehicleFeatures.weapons[group][index].commander_x_rate = (math.deg(turret_rot)/360)
 
+	if (not
+		vehicleFeatures.weapons[group][index].zeroing) then 
+		vehicleFeatures.weapons[group][index].zeroing = 300
+	end
 	-- removed tags for weapons for the time being
 
 	if(gun_trigger==nil) then 
@@ -198,7 +212,19 @@ function addGun(gunJoint,attatchedShape,turretJoint,turret_rot)
 	end
 
 	if HasTag(gun,"coax")then
-		addCoax(gunJoint,attatchedShape,turretJoint,vehicleFeatures.weapons[group][index].base_turret)
+		addCoax(
+			gunJoint,
+			attatchedShape,
+			turretJoint,
+			vehicleFeatures.weapons[group][index].base_turret,			
+			vehicleFeatures.weapons[group][index].commander_x_rate,
+			vehicleFeatures.weapons[group][index].commander_y_rate,
+			turret_min,
+			turret_max,
+			turret_rot,
+			vehicleFeatures.weapons[group][index].elevationRate
+			)
+
 
 	end
 
@@ -239,7 +265,18 @@ function addGun(gunJoint,attatchedShape,turretJoint,turret_rot)
 	return "gun: "..index.." "..#vehicleFeatures.weapons[group].."\n"..min.." | "..max.." "..vehicleFeatures.weapons[group][index].name.." "..gun.." "..vehicleFeatures.weapons[group][index].id.."\n"
 end
 
-function addCoax(gunJoint,attatchedShape,turretJoint,base_turret)
+function addCoax(
+	gunJoint,
+	attatchedShape,
+	turretJoint,
+	base_turret,
+	commander_x_rate,
+	commander_y_rate,
+	turret_min,
+	turret_max,
+	turret_rot,
+	elevationRate
+	)
 
 
 	-- DebugPrint("ADDING COAX")
@@ -275,6 +312,7 @@ function addCoax(gunJoint,attatchedShape,turretJoint,base_turret)
 	local index = (#vehicleFeatures.weapons[group])+1
 	vehicleFeatures.weapons[group][index] = deepcopy(weapons[weaponType])
 	vehicleFeatures.weapons[group][index].id = gun
+	vehicleFeatures.weapons[group][index].parent_shape = attatchedShape
 
 	gunCustomization(vehicleFeatures.weapons[group][index],true)
 
@@ -298,7 +336,28 @@ function addCoax(gunJoint,attatchedShape,turretJoint,base_turret)
 		vehicleFeatures.weapons[group][index].elevationSpeed = 1
 	end
 
-	vehicleFeatures.weapons[group][index].elevationRate =vehicleFeatures.weapons[group][index].elevationSpeed *  globalConfig.rpm_to_rad
+
+	if (not
+		vehicleFeatures.weapons[group][index].zeroing) then 
+		vehicleFeatures.weapons[group][index].zeroing = 300
+	end
+
+	vehicleFeatures.weapons[group][index].elevationRate = elevationRate
+
+
+	vehicleFeatures.weapons[group][index].turret_min = turret_min
+	vehicleFeatures.weapons[group][index].turret_max = turret_max
+	vehicleFeatures.weapons[group][index].turret_rotation_rate = turret_rot
+
+	local commander_view_y = GetJointMovement(gunJoint)
+	local commander_view_x = GetJointMovement(turretJoint)
+	vehicleFeatures.weapons[group][index].commander_view_x = commander_view_x
+	vehicleFeatures.weapons[group][index].commander_view_y = commander_view_y
+
+	vehicleFeatures.weapons[group][index].commander_y_rate = commander_y_rate
+	vehicleFeatures.weapons[group][index].commander_x_rate = commander_x_rate
+
+
 
 	if (not vehicleFeatures.weapons[group][index].sight[1].bias)then
 		vehicleFeatures.weapons[group][index].sight[1].bias = 1
@@ -685,6 +744,7 @@ function traverseTurret(turretJoint,attatchedShape)
 					DebugPrint("found component: "..val2)
 				end
 				if val2=="gunJoint" then
+					if(DEBUG_CODE) then 
 						status,retVal = pcall(addGun, joints[j], turret,turretJoint,rotation_rate);
 						if status then 
 							-- utils.printStr("no errors")
@@ -692,6 +752,9 @@ function traverseTurret(turretJoint,attatchedShape)
 							DebugPrint("[ERROR] "..retVal)
 							--errorMessages = errorMessages..retVal.."\n"
 						end
+					else
+						addGun(joints[j],turret,turretJoint,rotation_rate)
+					end
 
 
 	--				outString = outString..addGun(joints[j], turret,turretJoint)
@@ -762,10 +825,10 @@ function addVehicle()
 			vehicleFeatures = vehicles[index].vehicleFeatures
 			initVehicle(vehicles[index])
 
-			SetTag(sceneVehicles[i],"AVF_Custom","set")
+			RemoveTag(sceneVehicles[i],"AVF_Custom")
 			
 			-- RemoveTag(sceneVehicles[i],"AVF_Custom")
 		end
 	end
-
+	SetBool("level.avf.vehicle_spawned", false)
 end

@@ -8,8 +8,10 @@
 #include "weapons.lua"
 #include "vehicle_setup.lua"
 #include "AVF_UI.lua"
+#include "commander/team_allocater.lua"
 #include kinetic_effects.lua
 
+#include "audio_effects.lua"
 #include "visual_effects.lua"
 
 #include "AIComponent.lua"
@@ -25,6 +27,8 @@
 
 
 #include databus.lua
+
+#include debug_menu.lua
 
 ]]
 -- #include "../Abu Zayeet Ballistic Range/main/scripts/testing.lua"
@@ -321,7 +325,7 @@ debugMode = false
 
 DEBUG_AI = false
 
-DEBUG_CODE = true
+DEBUG_CODE = false
 
 debugging_traversal =false
 
@@ -340,6 +344,7 @@ debug_player_damage = false
 
 debug_vehicle_locations_active = false
 
+AVF_DEV_HUD_VISIBLE = false
 
 debugStuff= {
 
@@ -611,6 +616,12 @@ interaction_timeout_max = 1
 
 interaction_timeout_timer = 0
 
+
+ai_scan_timestep = 0.3
+
+last_ai_scan = 0
+
+
 MISSILE_TRACK_TIME_MIN =1.3
 
 viewingMap = false
@@ -684,11 +695,15 @@ function init()
 			if(not GetBool("savegame.mod.debug")) then	
 				initVehicle(vehicles[index])
 			else
-				local status,retVal = pcall(initVehicle,vehicles[index])
-				if status then 
-						-- utils.printStr("no errors")
+				if(DEBUG_CODE) then 
+					local status,retVal = pcall(initVehicle,vehicles[index])
+					if status then 
+							-- utils.printStr("no errors")
+					else
+						errorMessages = errorMessages..retVal.."\n"
+					end
 				else
-					errorMessages = errorMessages..retVal.."\n"
+					initVehicle(vehicles[index])
 				end
 			end
 		end
@@ -730,6 +745,10 @@ function init()
 	gunSmokeSize =1
 	gunSmokeGravity = 2
 
+
+
+	team_allocator_init()
+	AVF_TAK_INIT()
 
 	----- setting up tandem warhead pen valeus - ideally this will be raw deduction on major, or perhaps something more elegant is needed 
 
@@ -805,12 +824,15 @@ function initVehicle(vehicle_in,vehicle_type)
 							totalShapes = totalShapes..traverseTurret(test[j], vehicle.shapes[i])
 
 						elseif val2=="gunJoint" then
-							
-							local status,retVal = pcall(addGun,test[j], vehicle.shapes[i])
-							if status then 
-							-- utils.printStr("no errors")
+							if(DEBUG_CODE) then 
+								local status,retVal = pcall(addGun,test[j], vehicle.shapes[i])
+								if status then 
+								-- utils.printStr("no errors")
+								else
+									errorMessages = errorMessages..retVal.."\n"
+								end
 							else
-								errorMessages = errorMessages..retVal.."\n"
+								addGun(test[j],vehicle.shapes[i])
 							end
 							-- totalShapes = totalShapes..addGun(test[j], vehicle.shapes[i])
 						else
@@ -887,6 +909,7 @@ function initVehicle(vehicle_in,vehicle_type)
 		initAI()
 	end
 
+	SetTag(vehicle.id,"avf_initialized")
 
 
 	-- utils.printStr(tstStrn)
@@ -902,6 +925,16 @@ function initAI()
 end
 
 function tick(dt)
+
+
+	-- Button will be placed in the bottom bar of the pause menu
+	if PauseMenuButton("AVF Settings") then
+		AVF_DEV_HUD_VISIBLE = not AVF_DEV_HUD_VISIBLE
+	end
+	if(AVF_DEV_HUD_VISIBLE) then 
+		SetTimeScale(0.01)
+	end
+
 	frameErrorMessages = ""
 
 	-- local player_pos = GetPlayerCameraTransform().pos
@@ -943,6 +976,7 @@ function tick(dt)
 	end
 
 	pollNewVehicle(dt)
+	new_ai_scan()
 
 	if(GetBool("savegame.mod.debug")) then	
 		DebugWatch("Errors: ",errorMessages)
@@ -966,16 +1000,17 @@ function tick(dt)
 	-- if(AVF_Vehicle_Used and (InputPressed("esc") or InputDown("esc") or InputReleased("esc"))) then
 	-- 	SetInt("options.gfx.fov",originalFov)
 	-- end
+	team_allocator_tick()
+	AVF_TAK_TICK()
+
 
 end
 
 function gameplayTicks( dt )
 	if unexpected_condition then error() end
 
-	--- to be implemented
 
-
-		AVF_ai:aiTick(dt)
+	AVF_ai:aiTick(dt)
 
 	
 
@@ -987,6 +1022,43 @@ function gameplayTicks( dt )
 	ammoRefillTick(dt)
 
 	explosionController:tick(dt)
+end
+
+function new_ai_scan(dt)
+
+
+
+	local current_game_time = GetTime()
+	if (current_game_time - last_ai_scan > ai_scan_timestep ) then 
+		for key,vehicle_entry in pairs(vehicles) do
+			vehicleFeatures = vehicle_entry.vehicleFeatures
+			vehicle = vehicle_entry.vehicle
+			if(HasTag(vehicle.id,"new_avf_ai") and HasTag(vehicle.id,"avf_ai")) then
+				if(DEBUG_AI) then 
+					DebugWatch("found new ai to add")
+
+					local status,retVal = pcall(init_new_ai)
+					if status then 
+						
+						DebugPrint("Vehicle: "..vehicle.id.." is ai ready")
+					else
+						DebugWatch("[AI ADD ERROR]",retVal)--frameErrorMessages = frameErrorMessages..retVal.."\n"
+					end
+				else
+					AVF_ai:initAi()
+				end				
+				
+				RemoveTag(vehicle.id,"new_avf_ai")
+			end
+		end
+		last_ai_scan = current_game_time
+	end
+
+end
+
+
+function init_new_ai()
+	AVF_ai:initAi()
 end
 
 function playerTicks( dt )
@@ -1094,7 +1166,10 @@ function interactionTicks(dt)
 			vehicle = interactVehicle.vehicle
 			vehicleid = vehicle.groupIndex
 			vehicleFeatures = interactVehicle.vehicleFeatures
-
+			-- DebugWatch("vehicle disabled",HasTag(vehicle.id,"avf_vehicle_disabled"))
+			if(HasTag(vehicle.id,"avf_vehicle_disabled")) then 
+				return
+			end
 			if(vehicle.turret_weapon) then 
 				SetPlayerVehicle(vehicle.id)
 			else
@@ -1170,14 +1245,13 @@ end
 
 function update(dt)
 	--physics_update_ticks(dt) 
-	local status,retVal =pcall(physics_update_ticks,dt);
-	if status then 
-		-- utils.printStr("no errors")
-	else
-		DebugWatch("[ERROR]",retVal)
-	end
-
-	if(DEBUG_CODE) then 
+	if(DEBUG_CODE) then 	
+		local status,retVal =pcall(physics_update_ticks,dt);
+		if status then 
+			-- utils.printStr("no errors")
+		else
+			DebugWatch("[ERROR]",retVal)
+		end 
 		local status,retVal = pcall(update_gameplay_ticks,dt)
 		if status then 
 				
@@ -1188,6 +1262,7 @@ function update(dt)
 			debug_vehicle_locations()
 		end
 	else
+		physics_update_ticks(dt)
 		update_gameplay_ticks(dt)
 	end
 
@@ -1408,21 +1483,14 @@ end
 function handleSniperMode(dt ) 
 	if unexpected_condition then error() end
 
-
 	local gunGroup = vehicleFeatures.weapons[vehicleFeatures.equippedGroup]
 	local testgunobj = gunGroup[1].id
-
 	local focusGun = gunGroup[1]
 	local y = tonumber(focusGun.sight[1].y)
 	local x = tonumber(focusGun.sight[1].x)
 	local z = tonumber(focusGun.sight[1].z)
-
-
-
-
 	local commanderPos = GetShapeWorldTransform(vehicleFeatures.commanderPos) 
 	local focusGunPos = GetShapeWorldTransform(focusGun.id) 
-
 	if(HasTag(testgunobj,"commander")) then 
 		commanderPos = GetShapeWorldTransform(testgunobj)
 		if(testgunobj ~= nil and 
@@ -1435,62 +1503,33 @@ function handleSniperMode(dt )
 			local x_rot = (x_tag~=nil and x_tag) or 0
 			local y_rot = (y_tag~=nil and y_tag) or 0
 			local z_rot = (z_tag~=nil and z_tag) or 0 
-			-- DebugWatch("x_rot",x_rot)
-			-- DebugWatch("y_rot",y_rot)
-			-- DebugWatch("z_rot",z_rot)
 			commanderPos.rot = QuatRotateQuat(commanderPos.rot,QuatEuler(x_rot,y_rot, z_rot))
 		end
 	end
-	-- 
-	-- focusGunPos = rectifyBarrelCoords(focusGun)
-	
-
-	--DebugWatch("orgiinal barrel pos",focusGunPos)
 	focusGunPos = retrieve_first_barrel_coord(focusGun)
-
-	--DebugWatch("changing barrel pos",focusGunPos)
-	
 	local zero_range = 400
 	if(focusGun.zeroing and focusGun.zeroing >=50) then
 		zero_range = focusGun.zeroing 
 	end	
-	--	DebugWatch("ZERO RANGE",zero_range)
 	local cmddist = zero_range
-	-- if(GetBool("savegame.mod.horizontalGunLaying")) then
-	-- 	QueryRejectBody(vehicle.body)
-	-- 	QueryRejectShape(focusGun.id)
-	-- 	local cmdfwdPos = TransformToParentPoint(focusGunPos, Vec(0,  200 * -1),1)
-	--     local cmddirection = VecSub(cmdfwdPos, focusGunPos.pos)
-	--     cmddirection = VecNormalize(cmddirection)
-	--     QueryRequire("physical")
-	--     cmdhit, cmddist = QueryRaycast(focusGunPos.pos, cmddirection, 200)
-	--     DebugWatch("dist",cmddist)
-	-- end
-	-- DebugWatch("x: ",x)
-	-- DebugWatch("y: ",y)
-	-- DebugWatch("z: ",z)
 	local deadzone = 0
 	-- local commanderPos = GetShapeWorldTransform(vehicleFeatures.commanderPos) --vehicleFeatures.turrets.mainTurret[1].id)
 	-- local commanderPos = GetVehicleTransform(vehicle.id)
 	local posLoc  = TransformToParentPoint(commanderPos, Vec(x,  z, y ))
 	local fwdLoc  = TransformToParentPoint(commanderPos, Vec(x,  z-2,y ))
 	local direction = VecSub(posLoc, commanderPos.pos)
-
 	commanderPos.rot = QuatLookAt(posLoc,fwdLoc)
 	-- commanderPos.rot = QuatRotateQuat(commanderPos.rot,QuatEuler(0, 0, 0))
 	commanderPos.pos = VecAdd(commanderPos.pos, direction)
-
-	-- DebugWatch("x type",type(x))
-	----
 	local bias = utils.sign(x)
 
 	local primary = GetJointMovement(gunGroup[1].gunJoint)
 	
 	commanderPos.rot = QuatRotateQuat(commanderPos.rot,QuatEuler(-primary,0, 0))
-	DebugWatch("avf zero range",zero_range)
+	-- DebugWatch("avf zero range",zero_range)
 
 	local testCommander =  TransformToParentPoint(commanderPos,Vec(0,000,-zero_range))
-	local testGun =  TransformToParentPoint( GetShapeWorldTransform(testgunobj),Vec(0,-zero_range,0))
+	local testGun =  TransformToParentPoint( retrieve_first_barrel_coord(focusGun),Vec(0,-zero_range,0))
 	local offSetAngle = (math.atan(VecLength(VecSub(testCommander,testGun))/cmddist)*10)*bias
 
 	if(focusGun.aimForwards) then
@@ -1510,44 +1549,21 @@ function handleSniperMode(dt )
 		vehicle.ZOOMLEVEL = vehicle.ZOOMLEVEL - 1
 	end
 	local ZOOMVALUE = 1 - (vehicle.ZOOMVAL * vehicle.ZOOMLEVEL)
-	-- local mousewheel = InputValue("mousewheel")
-	-- if(mousewheel > 0 and vehicle.sniperFOV >20) then
-	-- 	vehicle.sniperFOV  = vehicle.sniperFOV - 10
-	-- elseif(mousewheel < 0 and vehicle.sniperFOV <originalFov)then 
-	-- 	vehicle.sniperFOV = vehicle.sniperFOV + 10
-	-- end
-	-- DebugWatch("mouse wheel",mousewheel)
-
-	-- DebugWatch("VecLength: ",VecLength(VecSub(commanderPos.pos,GetShapeWorldTransform(vehicleFeatures.turrets.mainTurret[1].id).pos)))
 	local rotateSpeed = (vehicle.sniperFOV*ZOOMVALUE) / vehicle.sniperFOV
 	local mouseX, mouseY = get_mouse_movement(10)
 	mouseX = -mouseX
 	mouseY = -mouseY
 
-
-
-	-- rough xy formula is (abs(max)+abs(min)) * (0 to 1) - min
-	-- inverse is max / (current+min)
-	-- assume always sub the max (which is the positive number and invert then angle will be correct)
-		-- add lowest number to everything so it's all positive then do opposite 
-			-- if both limits positive then add value at the end
-
-	-- do add 360 ,then
-
-	-- abs + abs  
-
--- understand that this provides 0 as 1 on the axis
---- fuck it, let'sjust do  prior behaviour but improve the residua optics focusGun
 	local min, max = GetJointLimits(focusGun.gunJoint)
 	local current = GetJointMovement(focusGun.gunJoint)
 	local gun_percentage = ((current - min)/(max -min))
 
 	local gun_target_angle = (gun_percentage *(max -min))+min
-	DebugWatch("gun movement gun_percentage ",gun_percentage)
-	DebugWatch("gun turret rotation min ",min)
-	DebugWatch("gun turret rotation max ",max)
-	DebugWatch("gun turret rotation current ",current)
-	DebugWatch("gun_target_angle",gun_target_angle)
+	-- DebugWatch("gun movement gun_percentage ",gun_percentage)
+	-- DebugWatch("gun turret rotation min ",min)
+	-- DebugWatch("gun turret rotation max ",max)
+	-- DebugWatch("gun turret rotation current ",current)
+	-- DebugWatch("gun_target_angle",gun_target_angle)
 
 	
 	local zoom_modifier = 1 - clamp(0,1,(vehicle.ZOOMLEVEL / (vehicle.ZOOMMAX*1.5)))
@@ -1561,20 +1577,36 @@ function handleSniperMode(dt )
 	end
 	focusGun.commander_view_x = clamp(0,1,view_x)
 	focusGun.commander_view_y = clamp(0,1,view_y)
-	DebugWatch("commander_x_rate",focusGun.commander_x_rate)
-	DebugWatch("commander_y_rate",focusGun.commander_y_rate)
-	DebugWatch("commander_view_x",focusGun.commander_view_x)
-	DebugWatch("commander_view_y",focusGun.commander_view_y)
 	local target_x = focusGun.commander_view_x * (focusGun.turret_max - focusGun.turret_min) + focusGun.turret_min
 	local target_y = focusGun.commander_view_y * (max - min) + min
-	DebugWatch("target_y",target_y)
-	DebugWatch("target_x",target_x)
-	-- DebugWatch("gun gun.elevationSpeed",focusGun.elevationSpeed)
-	-- SetJointMotorTarget(focusGun.turretJoint, target_x, focusGun.turret_rotation_rate)
-	-- SetJointMotorTarget(focusGun.gunJoint, target_y, focusGun.elevationRate)
-	SetJointMotorTarget(focusGun.turretJoint, target_x, focusGun.turret_rotation_rate)
-	SetJointMotorTarget(focusGun.gunJoint, target_y, focusGun.elevationRate)
+	
+	local turret_rotation_force = GetBodyMass(GetShapeBody(focusGun.parent_shape))
+	local rotation_force = GetBodyMass(GetShapeBody(focusGun.id))
 
+	if(focusGun.turret_min == -180 and focusGun.turret_max  == 180 ) then
+		local target_turret_rot = (GetJointMovement(focusGun.turretJoint)-target_x)
+		if(math.abs(target_turret_rot) >90) then 
+			target_turret_rot = 0.5*utils.sign(-target_turret_rot)
+		end
+		SetJointMotor(focusGun.turretJoint, focusGun.turret_rotation_rate*clamp(-1,1,target_turret_rot),turret_rotation_force)
+		-- DebugWatch("target_turret_rot ",clamp(-1,1,target_turret_rot))
+		-- DebugWatch("focusGun.turretJoint",focusGun.turretJoint)
+		-- DebugWatch("focusGun.turret_rotation_rate*clamp(-1,1,target_turret_rot)",focusGun.turret_rotation_rate*clamp(-1,1,target_turret_rot))
+		-- DebugWatch("turret rotation force",turret_rotation_force)
+	else
+		SetJointMotorTarget(focusGun.turretJoint, target_x, focusGun.turret_rotation_rate,turret_rotation_force)
+	end
+	-- DebugWatch("target_x ",target_x)
+	-- DebugWatch("turret_rotateSpeed ",focusGun.turret_rotation_rate)
+	if(min == -180 and max == 180 ) then
+		SetJointMotor(focusGun.gunJoint, focusGun.elevationRate*(current-target_y),rotation_force)
+		
+	else
+
+		SetJointMotorTarget(focusGun.gunJoint, target_y, focusGun.elevationRate,rotation_force)	
+	end
+
+	local focus_gun_aim_pos =  TransformToParentPoint( retrieve_first_barrel_coord(focusGun),Vec(0,zero_range,0))
 	if(debugMode)then
 		DebugWatch("MouseX",mouseX)
 		DebugWatch("MouseY",mouseY)
@@ -1582,12 +1614,13 @@ function handleSniperMode(dt )
 	for key,gun in pairs(gunGroup) do
 			if(gun.id ~= focusGun.id) then 
 				local turret_rotation_force = GetBodyMass(GetShapeBody(gun.parent_shape))
-				if(gun.turretJoint~=nil) then 
+				if(gun.turretJoint~=nil and gun.turretJoint ~= focusGun.turretJoint) then 
 					local min, max = GetJointLimits(gun.turretJoint)
 					local current = GetJointMovement(gun.turretJoint)
 					-- DebugWatch("gun turret rotation min ",min)
 					-- DebugWatch("gun turret rotation max ",max)
 					-- DebugWatch("gun turret rotation current ",current)
+					-- DebugWatch("turret_rotateSpeed ",turret_rotateSpeed)
 					if(math.abs(mouseX)>deadzone) then
 							local turn_force = 1
 							turret_rotateSpeed = rotateSpeed*.6
@@ -1598,105 +1631,11 @@ function handleSniperMode(dt )
 				end
 					
 				local rotation_force = GetBodyMass(GetShapeBody(gun.id))
-				if(gun.locked) then
-					handleGunMovement(dt)
-				
-				elseif(math.abs(mouseY)>deadzone) then
-					if( gun.elevationSpeed) then
-						local pre = GetJointMovement(gun.gunJoint)
-						SetJointMotor(gun.gunJoint, (gun.elevationSpeed*utils.sign(mouseY))*rotateSpeed,rotation_force)
-						gun.moved = true
-					else
-						SetJointMotor(gun.gunJoint, (1*utils.sign(mouseY))*rotateSpeed,rotation_force)
-						gun.moved = true
-					end
-				else
-					if(gun.currentGunjointAngle) then
-						
-						local bias = 0.25
-						if(gun.elevationSpeed) then
-							bias = gun.elevationSpeed/10
-						end
-						SetJointMotor(gun.gunJoint, retainGunAngle(gun)*bias,rotation_force)
-					else
-						SetJointMotor(gun.gunJoint, 0,rotation_force)
-					end
-				end 
+
+				local barrelCoords = getBarrelCoords(gun)
+				gunLaying(gun,barrelCoords,focus_gun_aim_pos)
 			end
 		end
-	-- SetCameraTransform(commanderPos, vehicle.sniperFOV*ZOOMVALUE)
-
-	-- 	for key,gun in pairs(gunGroup) do
-
-	-- 		local turret_rotation_force = GetBodyMass(GetShapeBody(gun.parent_shape))
-	-- 		if(gun.turretJoint~=nil) then 
-	-- 			local min, max = GetJointLimits(gun.turretJoint)
-	-- 			local current = GetJointMovement(gun.turretJoint)
-	-- 			-- DebugWatch("gun turret rotation min ",min)
-	-- 			-- DebugWatch("gun turret rotation max ",max)
-	-- 			-- DebugWatch("gun turret rotation current ",current)
-	-- 			if(math.abs(mouseX)>deadzone) then
-	-- 					local turn_force = 1
-	-- 					turret_rotateSpeed = rotateSpeed*.6
-	-- 					SetJointMotor(gun.turretJoint, (turn_force*utils.sign(mouseX))*turret_rotateSpeed,turret_rotation_force)
-	-- 			else
-	-- 				SetJointMotor(gun.turretJoint, 0,turret_rotation_force)
-	-- 			end
-	-- 		end
-
-
-	-- 		-- -- rough xy formula is (abs(max)+abs(min)) * (0 to 1) - min
-	-- 		-- -- inverse is max / (current+min)
-	-- 		-- -- assume always sub the max (which is the positive number and invert then angle will be correct)
-	-- 		-- 	-- add lowest number to everything so it's all positive then do opposite 
-	-- 		-- 		-- if both limits positive then add value at the end
-
-	-- 		-- -- do add 360 ,then
-
-	-- 		-- -- abs + abs  
-
-	-- 		-- -- understand that this provides 0 as 1 on the axis
-	-- 		-- --- fuck it, let'sjust do  prior behaviour but improve the residua optics focusGun
-	-- 		-- 	local min, max = GetJointLimits(gun.gunJoint)
-	-- 		-- 	local current = GetJointMovement(gun.gunJoint)
-	-- 		-- 	local gun_percentage = ((current - min)/(max -min))
-
- -- 		-- 		local gun_target_angle = (gun_percentage *(max -min))+min
-	-- 		-- 	DebugWatch("gun movement gun_percentage ",gun_percentage)
-	-- 		-- 	DebugWatch("gun turret rotation min ",min)
-	-- 		-- 	DebugWatch("gun turret rotation max ",max)
-	-- 		-- DebugWatch("gun turret rotation current ",current)
-	-- 		-- DebugWatch("gun_target_angle",gun_target_angle)
-	-- 			-- DebugWatch("commander view x",((current-min)
-	-- 			-- DebugWatch("commander view y",)
-				
-	-- 		local rotation_force = GetBodyMass(GetShapeBody(gun.id))
-	-- 		if(gun.locked) then
-	-- 			handleGunMovement(dt)
-			
-	-- 		elseif(math.abs(mouseY)>deadzone) then
-	-- 			if( gun.elevationSpeed) then
-	-- 				local pre = GetJointMovement(gun.gunJoint)
-	-- 				SetJointMotor(gun.gunJoint, (gun.elevationSpeed*utils.sign(mouseY))*rotateSpeed,rotation_force)
-	-- 				gun.moved = true
-	-- 			else
-	-- 				SetJointMotor(gun.gunJoint, (1*utils.sign(mouseY))*rotateSpeed,rotation_force)
-	-- 				gun.moved = true
-	-- 			end
-	-- 		else
-	-- 			if(gun.currentGunjointAngle) then
-					
-	-- 				local bias = 0.25
-	-- 				if(gun.elevationSpeed) then
-	-- 					bias = gun.elevationSpeed/10
-	-- 				end
-	-- 				SetJointMotor(gun.gunJoint, retainGunAngle(gun)*bias,rotation_force)
-	-- 			else
-	-- 				SetJointMotor(gun.gunJoint, 0,rotation_force)
-	-- 			end
-	-- 		end 
-	-- 	end
-	-- -- SetCameraTransform(commanderPos, vehicle.sniperFOV*ZOOMVALUE)
 end
 
 
@@ -1759,7 +1698,7 @@ function set_sniper_cam(dt)
 	if(focusGun.zeroing and focusGun.zeroing >=50) then
 		zero_range = focusGun.zeroing 
 	end	
-	DebugWatch("zero range",zero_range)
+	-- DebugWatch("zero range",zero_range)
 
 	SetInt("level.avf.zeroing",zero_range)
 		-- DebugWatch("ZERO RANGE",zero_range)
@@ -1929,22 +1868,40 @@ function handle_artillery_control(dt)
 				-- DebugWatch("turet  movement",turret_movement)
 				--[[]]
 				if(gun_movement~=0 and not IsJointBroken(gun.gunJoint) and not (gun.turretJoint and IsJointBroken(gun.turretJoint)))then	
-					if( gun.elevationSpeed) then
-						SetJointMotor(gun.gunJoint, (gun.elevationSpeed*gun_movement)*rotateSpeed)
-					else
-						SetJointMotor(gun.gunJoint, gun_movement*rotateSpeed)
-					end
+									
+					local rotation_force = GetBodyMass(GetShapeBody(gun.id))
+
+
+					local min, max = GetJointLimits(gun.gunJoint)
+					local current = GetJointMovement(gun.gunJoint)
+					gun.commander_view_y = clamp(0,1,(gun.commander_view_y + (gun.commander_y_rate*GetTimeStep() * -gun_movement)))
+					local target_y = gun.commander_view_y * (max - min) + min
+					SetJointMotorTarget(gun.gunJoint, target_y, gun.elevationRate)
+
+
+					-- if( gun.elevationSpeed) then
+					-- 	SetJointMotor(gun.gunJoint, (gun.elevationSpeed*gun_movement)*rotateSpeed)
+					-- else
+					-- 	SetJointMotor(gun.gunJoint, gun_movement*rotateSpeed)
+					-- end
 					gun.last_gun_joint_pos = GetJointMovement(gun.gunJoint)
 			
 					--DebugWatch(" gun_movement*rotateSpeed", gun_movement*rotateSpeed)
 				else
-					if(gun.last_gun_joint_pos and gun.last_gun_joint_pos < GetJointMovement(gun.gunJoint)) then 
-						SetJointMotor(gun.gunJoint, 0.2)
-					elseif(gun.last_gun_joint_pos and gun.last_gun_joint_pos > GetJointMovement(gun.gunJoint)) then 
-						SetJointMotor(gun.gunJoint, -0.2)
-					else
-						SetJointMotor(gun.gunJoint, 0)
-					end
+					local rotation_force = GetBodyMass(GetShapeBody(gun.id))
+					local min, max = GetJointLimits(gun.gunJoint)
+					local current = GetJointMovement(gun.gunJoint)
+					gun.commander_view_y = clamp(0,1,(gun.commander_view_y + (gun.commander_y_rate*GetTimeStep() * -gun_movement)))
+					local target_y = gun.commander_view_y * (max - min) + min
+					SetJointMotorTarget(gun.gunJoint, target_y, gun.elevationRate)
+
+					-- if(gun.last_gun_joint_pos and gun.last_gun_joint_pos < GetJointMovement(gun.gunJoint)) then 
+					-- 	SetJointMotor(gun.gunJoint, 0.2)
+					-- elseif(gun.last_gun_joint_pos and gun.last_gun_joint_pos > GetJointMovement(gun.gunJoint)) then 
+					-- 	SetJointMotor(gun.gunJoint, -0.2)
+					-- else
+					-- 	SetJointMotor(gun.gunJoint, 0)
+					-- end
 				end 
 
 				if(gun.base_turret) then 
@@ -2052,16 +2009,18 @@ function handleGunOperation(dt)
 		firing = true
 	elseif( released and not held)then
 		
-		
-		-- utils.printStr(#gunGroup)
-		for key2,gun in ipairs(gunGroup) do
-			if(not gun.reloading and gun.tailOffSound and gun.rapidFire)then
-				local cannonLoc = GetShapeWorldTransform(gun.id)
-				PlaySound(gun.tailOffSound, cannonLoc.pos, 80)
-				gun.rapidFire = false
+		if(gunGroup) then 
+			-- utils.printStr(#gunGroup)
+			for key2,gun in ipairs(gunGroup) do
+				if(not gun.reloading and gun.tailOffSound and gun.rapidFire)then
+					local cannonLoc = GetShapeWorldTransform(gun.id)
+					play_gun_sound(gun.tailOffSound, cannonLoc.pos, 80, gun.custom_tail_off,gun,"tailOffSound")
+					gun.rapidFire = false
+				end
 			end
+		else
+			DebugWatch("AVF Vehicle "..vehicle.id.." gungroup is ",gunGroup)
 		end
-		
 	end
 
 	-- for key,gunGroup in pairs(vehicleFeatures.weapons) do
@@ -2136,7 +2095,7 @@ function handleGunOperation(dt)
 						    	end
 								local cannonLoc = GetShapeWorldTransform(gun.id)
 
-								PlayLoop(gun.loopSoundFile, cannonLoc.pos, 5)
+								play_gun_loop_sound(gun.loopSoundFile, cannonLoc.pos, 5, gun.custom_loop_sound_file,gun,"loopSoundFile")
 								
 							end
 							
@@ -2167,11 +2126,15 @@ function handleGunOperation(dt)
 
 									end
 									if(currentMagazine.AmmoCount <= 0) then
-										local status,retVal = pcall(reloadGun,gun);
-										if status then 
-											-- utils.printStr("no errors")
+										if(DEBUG_CODE) then 
+											local status,retVal = pcall(reloadGun,gun);
+											if status then 
+												-- utils.printStr("no errors")
+											else
+												errorMessages = errorMessages..retVal.."\n"
+											end
 										else
-											errorMessages = errorMessages..retVal.."\n"
+											reloadGun(gun)
 										end
 										-- reloadGun(gun)
 									end
@@ -2233,7 +2196,7 @@ function handleInteractedGunOperation(dt,interactGun)
 			for key2,gun in ipairs(gunGroup) do
 				if(gun.id == interactGun and not gun.reloading and gun.tailOffSound and gun.rapidFire)then
 					local cannonLoc = GetShapeWorldTransform(gun.id)
-					PlaySound(gun.tailOffSound, cannonLoc.pos, 5)
+					play_gun_sound(gun.tailOffSound, cannonLoc.pos, 5, gun.custom_tail_off,gun,"tailOffSound")
 					gun.rapidFire = false
 				end
 			end
@@ -2256,7 +2219,8 @@ function handleInteractedGunOperation(dt,interactGun)
 					    	end
 							local cannonLoc = GetShapeWorldTransform(gun.id)
 
-							PlayLoop(gun.loopSoundFile, cannonLoc.pos, 5)
+							play_gun_loop_sound(gun.loopSoundFile, cannonLoc.pos, 5, gun.custom_loop_sound_file,gun,"loopSoundFile")
+							-- PlayLoop(gun.loopSoundFile, cannonLoc.pos, 5)
 							
 						end
 						
@@ -2282,10 +2246,14 @@ function handleInteractedGunOperation(dt,interactGun)
 
 								end
 								if(currentMagazine.AmmoCount <= 0) then
-									local status,retVal = pcall(reloadGun,gun);
-									if status then 
+									if(DEBUG_CODE) then 
+										local status,retVal = pcall(reloadGun,gun);
+										if status then 
+										else
+											errorMessages = errorMessages..retVal.."\n"
+										end
 									else
-										errorMessages = errorMessages..retVal.."\n"
+										reloadGun(gun)
 									end
 								end
 								
@@ -2327,9 +2295,13 @@ function handle_weapon_firing(dt,gun)
 
 			end
 			if(currentMagazine.AmmoCount <= 0) then
-				local status,retVal = pcall(reloadGun,gun);
-				if not status then 
-					DebugWatch("weapon reload error: ",retVal)
+				if(DEBUG_CODE) then 
+					local status,retVal = pcall(reloadGun,gun);
+					if not status then 
+						DebugWatch("weapon reload error: ",retVal)
+					end
+				else
+					reloadGun(gun)
 				end
 			end
 		end
@@ -2382,7 +2354,7 @@ function initiate_missile_guidance(dt,gun,firing)
 	    end
 
 	    local pos = VecAdd(cannonLoc.pos,VecScale(direction,dist))
-	    DrawLine(cannonLoc.pos, pos, 1, 0, 0) 
+	    -- DrawLine(cannonLoc.pos, pos, 1, 0, 0) 
 
 	    -- DebugWatch("dist",dist)
 	
@@ -2492,9 +2464,18 @@ end
 
 function handleReload(gun,dt)
 	
-	gun.reloadTime = gun.reloadTime - dt
 	if(not gun.reloadPlayOnce)then
-		PlayLoop(gun.reloadSound, GetShapeWorldTransform(gun.id).pos, 3)
+		local reload_percentage  = 1-(gun.reloadTime / gun.reload)
+		play_reloading_sound(
+			gun.reloadSound, 
+			GetShapeWorldTransform(gun.id).pos, 
+			5,
+			gun.custom_reload,
+			reload_percentage  ,
+			gun,
+			"reloadSound"
+			)
+		-- PlayLoop(gun.reloadSound, GetShapeWorldTransform(gun.id).pos, 3)
 	end
 	local currentMagazine = gun.magazines[gun.loadedMagazine].magazinesAmmo[gun.magazines[gun.loadedMagazine].currentMagazine]
 	local base_reload = gun.reload					
@@ -2512,6 +2493,8 @@ function handleReload(gun,dt)
 		-- gun.magazines[gun.loadedMagazine].currentMagazine = gun.magazines[gun.loadedMagazine].nextMagazine
 	
 	end
+
+	gun.reloadTime = gun.reloadTime - dt
 end
 
 function eject_shell_casing(gun,base_reload,reloadTime)
@@ -2630,7 +2613,7 @@ function reloadGun(gun)
 	local currentMagazine =loadedMagazine.magazinesAmmo[gun.magazines[gun.loadedMagazine].currentMagazine]
 	if(gun.tailOffSound and gun.rapidFire)then
 		local cannonLoc = GetShapeWorldTransform(gun.id)
-		PlaySound(gun.tailOffSound, cannonLoc.pos, 5)
+		play_gun_sound(gun.tailOffSound, cannonLoc.pos, 5, gun.custom_tail_off,gun,"tailOffSound")
 		gun.rapidFire = false
 	end
 	gun.reloading = true
@@ -2656,7 +2639,8 @@ function reloadGun(gun)
 	currentMagazine.expendedMagazines = currentMagazine.expendedMagazines+1 
 	end
 		if(gun.reloadPlayOnce)then
-			PlaySound(gun.reloadSound, GetShapeWorldTransform(gun.id).pos, 5)
+			-- PlaySound(gun.reloadSound, GetShapeWorldTransform(gun.id).pos, 5)
+			play_gun_sound(gun.reloadSound, GetShapeWorldTransform(gun.id).pos, 5, gun.custom_reload,gun,"reloadSound")
 		end
 
 end
@@ -4007,7 +3991,7 @@ end
 
 
 function autoGunAim(gun,barrelCoords)
-	local turretPos = GetShapeWorldTransform(gun.id).pos -- cheej
+	local turretPos = retrieve_first_barrel_coord(gun).pos--GetShapeWorldTransform(gun.id).pos -- cheej
 	-- turretPos[2] = turretPos[3]
 	local targetPos = GetCameraTransform().pos
 	local dir = VecSub(targetPos,turretPos)
@@ -4018,27 +4002,27 @@ function autoGunAim(gun,barrelCoords)
 	heightDiff = math.max(-0.25,heightDiff)
 	-- targetPos[2] = 0
 	-- turretPos[2] = 0
-	if(reticleWorldPos) then 
+	if(false and reticleWorldPos) then 
 		targetPos = reticleWorldPos
+		DebugWatch("reticle pos exists",reticleWorldPos)
+	else
+			local crosshairDir = UiPixelToWorld(UiCenter(), UiMiddle()-50)
+		local crosshairQuat = QuatDir(crosshairDir)
+	    local crosshairTr = Transform(GetCameraTransform().pos, crosshairQuat)
+		targetPos = TransformToParentPoint(crosshairTr,Vec(0,0,-gun.zeroing))--TransformToParentPoint(GetCameraTransform(),Vec(0,0,-gun.zeroing)) 
 	end
 	shootDir = VecSub(turretPos,targetPos)
 	shootDir = VecNormalize(shootDir)
 	-- shootDir[2] = heightDiff
 	shootDir = VecNormalize(shootDir)
 
-	local lookDir =  VecAdd(turretPos,VecScale(shootDir,100))
+	local lookDir =  VecAdd(turretPos,VecScale(shootDir,gun.zeroing))
 	local nt = Transform()
-	-- if(reticleWorldPos)then 
-	-- 	DebugWatch("reticle world",reticleWorldPos)
-		
-	-- else
-	-- 	DebugWatch("lookdir",lookDir)
-	-- end
 
-	-- DebugLine(turretPos,lookDir,0,0,1,1)
+
 	nt.rot = QuatLookAt(turretPos, lookDir) -- cheej
 	nt.pos = VecCopy(turretPos)
-	nt = TransformToParentPoint(nt,Vec(0,0,-50))
+	nt = TransformToParentPoint(nt,Vec(0,0,-gun.zeroing))
 	gunLaying(gun,barrelCoords,nt)
 end
 
@@ -4049,12 +4033,10 @@ function gunLaying(gun,barrelCoords,targetPos)
 	local bias = 0.05
 	gun.aimed = false
 
-	DebugWatch("gun up: ",
-			up)
-	DebugWatch("gun down: ",
-			down)
-	DebugWatch("gun weight: ",
-			up-down)
+	-- DebugWatch("gun up: ",
+	-- 		up)
+	-- DebugWatch("gun down: ",
+	-- 		down)
 
 	local dir = 0
 	local dir_impulse = 0 
@@ -4070,31 +4052,19 @@ function gunLaying(gun,barrelCoords,targetPos)
 
 	local rotation_force = GetBodyMass(GetShapeBody(gun.id))
 
-	
-	-- gun.commander_view_x = clamp(0,1,(focusGun.commander_view_x + (focusGun.commander_x_rate*dt * utils.sign(-mouseX))*zoom_modifier)%1)
-	-- gun.commander_view_y = clamp(0,1,(focusGun.commander_view_y + (focusGun.commander_y_rate*dt * utils.sign(-mouseY))*zoom_modifier)%1)
-	-- DebugWatch("commander_x_rate",focusGun.commander_x_rate)
-	-- DebugWatch("commander_y_rate",focusGun.commander_y_rate)
-	-- DebugWatch("commander_view_x",focusGun.commander_view_x)
-	-- DebugWatch("commander_view_y",focusGun.commander_view_y)
-	-- local target_x = focusGun.commander_view_x * (focusGun.turret_max - focusGun.turret_min) + focusGun.turret_min
-	-- local target_y = focusGun.commander_view_y * (max - min) + min
-	-- DebugWatch("target_y",target_y)
-	-- DebugWatch("target_x",target_x)
-	-- -- DebugWatch("gun gun.elevationSpeed",focusGun.elevationSpeed)
-	-- SetJointMotorTarget(focusGun.turretJoint, target_x, focusGun.turret_rotation_rate)
-	-- SetJointMotorTarget(focusGun.gunJoint, target_y, focusGun.elevationRate)
 
+	local min, max = GetJointLimits(gun.gunJoint)
+	local current = GetJointMovement(gun.gunJoint)
+	gun.commander_view_y = clamp(0,1,(gun.commander_view_y + (gun.commander_y_rate*GetTimeStep() * -dir)))
+	local target_y = gun.commander_view_y * (max - min) + min
+	SetJointMotorTarget(gun.gunJoint, target_y, gun.elevationRate)
 
- --    local rot_speed = gun.elevationRate * GetTimeStep()
-	-- -- SetJointMotor(gun.gunJoint, dir*(bias*10),rotation_force)
-	-- SetJointMotor(gun.gunJoint, dir*rot_speed,rotation_force)
 end
 
 function gunAngle(x,y,z,gun,targetPos)
 
 	 	-- DebugWatch("avf ai turret test ",1)
-	local gunTransform = GetShapeWorldTransform(gun.id)
+	local gunTransform =  retrieve_first_barrel_coord(gun)
 	 
 	local fwdPos = targetPos
 

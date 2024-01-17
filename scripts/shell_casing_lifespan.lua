@@ -4,7 +4,7 @@
 function init()
 	script_active = true
 	shape = FindShape("")
-	min_dist = math.random(25,55)
+	min_dist = math.random(15,55)
 	life_timer = 0 
 	max_life = math.random(10,45)
 
@@ -15,7 +15,7 @@ function tick(dt)
 		if(IsHandleValid(shape)) then 
 			local shape_pos = GetShapeWorldTransform(shape).pos
 			local player_pos = GetPlayerPos()
-			if(life_timer > max_life and  VecLength(VecSub(player_pos,shape_pos))>min_dist) then 
+			if((life_timer > max_life and  VecLength(VecSub(player_pos,shape_pos))>min_dist) or life_timer > max_life *2 ) then 
 				Delete(shape)
 				script_active = false
 			else

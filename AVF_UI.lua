@@ -62,8 +62,15 @@ end
 
 
 function draw()
+
+	if AVF_DEV_HUD_VISIBLE then
+		SHOW_AVF_DEV_HUD()
+	end
+
+
 	local visible	 = 1
 
+		-- DebugWatch("hide controls",GetBool("savegame.mod.hideControls"))
 	inVehicle, vehicleid = playerInVehicle()
 	if(inVehicle)then
 		vehicle = vehicles[vehicleid].vehicle
@@ -84,12 +91,15 @@ function draw()
 		UiPop()
 		
 		UiPush()
-
-		local status,retVal = pcall(draw_health_bars)
-		if status then 
-				-- utils.printStr("no errors")
+		if(DEBUG_CODE) then 
+			local status,retVal = pcall(draw_health_bars)
+			if status then 
+					-- utils.printStr("no errors")
+			else
+				DebugWatch("[GAMEPLAY TICK ERROR]",retVal)--frameErrorMessages = frameErrorMessages..retVal.."\n"
+			end
 		else
-			DebugWatch("[GAMEPLAY TICK ERROR]",retVal)--frameErrorMessages = frameErrorMessages..retVal.."\n"
+			draw_health_bars()
 		end
 
 		
@@ -108,32 +118,33 @@ function draw()
 		UiFont("bold.ttf", 24)
 
 		-- local weaponText =  string.format("%s%s\n%s", tag, title, tag)
+		-- DebugWatch("hide controls",GetBool("savegame.mod.hideControls"))
 		if(not GetBool("savegame.mod.hideControls")) then		
-		if(gunGroup~=nil and #gunGroup>0) then 
-			for key,gun in pairs(gunGroup)	do 
-					-- UiPush()
-						UiAlign("center middle")
-						UiTranslate(0, 40)
-						UiColor(0,0,0,.3)
-						UiRect(350, 10+90)
-						UiTranslate(0, -30)
-						UiColor(1,1,1)
-						UiText(gun.name)
-						-- if(not IsShapeBroken(gun.id))then	
+			if(gunGroup~=nil and #gunGroup>0) then 
+				for key,gun in pairs(gunGroup)	do 
+						-- UiPush()
+							UiAlign("center middle")
+							UiTranslate(0, 40)
+							UiColor(0,0,0,.3)
+							UiRect(350, 10+90)
+							UiTranslate(0, -30)
+							UiColor(1,1,1)
+							UiText(gun.name)
+							-- if(not IsShapeBroken(gun.id))then	
 
-						-- 	UiText(gun.name)
-						-- else
-						-- 	UiText(gun.name.." BROKEN")
-						-- end
-						
-						UiTranslate(0, 40)
-						
-						
-						getWeaponAmmoText(gun)--getWeaponAmmoText(gun))
-						UiTranslate(0, 30)
-					-- UiPop()
+							-- 	UiText(gun.name)
+							-- else
+							-- 	UiText(gun.name.." BROKEN")
+							-- end
+							
+							UiTranslate(0, 40)
+							
+							
+							getWeaponAmmoText(gun)--getWeaponAmmoText(gun))
+							UiTranslate(0, 30)
+						-- UiPop()
+				end
 			end
-		end
 			UiPop()
 
 
@@ -536,7 +547,6 @@ function math.sign(x)
 end
 
 
-
 function debug_vehicle_locations()
 
 	for key,vehicle in pairs(vehicles) do
@@ -567,7 +577,7 @@ function debug_track_gun(gun)
 	end
 	-- utils.printStr	(gun.multiBarrel)--.." | "..#gun.barrels	)
 	local cannonLoc = GetShapeWorldTransform(gun.id)
-	-- DebugCross(cannonLoc.pos,1,0,0)
+	DebugCross(cannonLoc.pos,1,0,0)
 	local y = barrel.y
 	local x = barrel.x 
 	local z = barrel.z
@@ -578,6 +588,10 @@ function debug_track_gun(gun)
 	local direction = VecSub(fwdPos, cannonLoc.pos)
 	cannonLoc.pos = VecAdd(cannonLoc.pos, direction)
 
-	-- DebugCross(cannonLoc.pos)
+	DebugCross(cannonLoc.pos)
 	return cannonLoc
 end
+
+
+
+

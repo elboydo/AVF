@@ -64,10 +64,15 @@ weaponOverrides = {
 					smokeFactor 			= "smokeFactor",
 					smokeMulti				= "smokeMulti",
 					soundFile				= "soundFile",
+					custom_fire_sound		= "custom_fire_sound",
 					mouseDownSoundFile 		= "mouseDownSoundFile",
+					custom_mouse_down		= "custom_mouse_down",
 					loopSoundFile 			= "loopSoundFile",
+					custom_loop_sound_file  = "custom_loop_sound_file",
 					tailOffSound	 		= "tailOffSound",
+					custom_tail_off         = "custom_tail_off",
 					reloadSound 			= "reloadSound",
+					custom_reload         	= "custom_reload",
 					reloadPlayOnce 			= "reloadPlayOnce",
 					custom_sight_script     = "custom_sight_script"
 

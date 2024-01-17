@@ -1,7 +1,7 @@
 --[[
 
 #include "common.lua"
-#include "pathfinding.lua"
+#include "pathfinding/AVF_pathfinder.lua"
 #include "AVF_AI_ACS.lua"
 
 ]]
@@ -110,6 +110,7 @@ AVF_ai = {
 			last_spotted = 0,
 			spotted_memory = 1.5,
 			target = nil,
+			target_pos = nil,
 		},
 		optics_pos = Transform(Vec(0,0.85,0),Quat()),
 		custom_optics = false,
@@ -131,7 +132,7 @@ AVF_ai = {
 					name = "patrol",
 					actionable = false, 
 					impulse = 1,
-					score = 0.01,
+					score = -1,
 					target = 0,
 					target_type = "location",
 					target_location = {0,0,0},
@@ -154,6 +155,7 @@ AVF_ai = {
 					name = "attack",
 					actionable = false,  
 					impulse = 1,
+					preference = 1,
 					score = -1,
 					target = 0,
 					target_type = "",
@@ -164,7 +166,8 @@ AVF_ai = {
 			[4] = {
 					name = "defend",
 					actionable = false,  
-					impulse = 1,
+					impulse = 0.7,
+					preference = 1,
 					score = -1,
 					target = 0,
 					target_type = "",
@@ -182,6 +185,28 @@ AVF_ai = {
 					target_location = {0,0,0},
 					origin = {},
 					action_desc = "follow a nearby ally",
+			},
+			[6] = {
+					name = "recieve_orders",
+					actionable = false,  
+					impulse = 1,
+					score = -1,
+					target = 0,
+					target_type = "",
+					target_location = {0,0,0},
+					origin = {},
+					action_desc = "Follow commander orders",
+			},
+			[7] = {
+					name = "neutral",
+					actionable = false,  
+					impulse = 1,
+					score = 0.1,
+					target = 0,
+					target_type = "",
+					target_location = {0,0,0},
+					origin = {},
+					action_desc = "remain inactive while untasked",
 			},
 		},
 		ACS = {}
@@ -259,6 +284,7 @@ function AVF_ai:init_custom_ai_behaviours(ai)
 		end
 	end
 	ai.pathing_priorities[2].preference = 0.9 - math.random() 
+	ai.behaviors.target_engagement_range =	math.random(15,55)
 	AVF_ai:init_AI_ACS(ai)
 
 end
@@ -296,15 +322,20 @@ end
 
  	]]
  function AVF_ai:aiTick(dt)
+ 	if(DEBUG_AI)then
+
+ 		DebugWatch("debugging ai",#self.vehicles)
+ 	end
+	capture_points = FindTriggers("avf_conquest_point",true)
  	-- DebugWatch("time",dt)
  	self.current_phase = (self.current_phase%self.phases) +1
  	-- DebugWatch("avf ai vehicles",#self.vehicles)
  	for key,ai in ipairs(self.vehicles) do
  		-- self:targetSelection(ai)
- 		
+ 		-- DebugWatch("AVF_ai "..ai.id,ai.alive)
  		-- DebugWatch("AVF_ai "..ai.id,ai.phase)
  		if(ai.alive)  then 
- 			if(HasTag(ai.id,"avf_vehicle_disabled")) then 
+ 			if(HasTag(ai.id,"avf_vehicle_disabled") or GetVehicleHealth(ai.id)<0.5) then 
  				ai.alive = false
  			elseif(HasTag(ai.id,"avf_vehicle_cooking_off")) then 
  				ai.cooking_off = true
@@ -326,7 +357,7 @@ end
 		Pathing takes place after all AI have evaluated their activities and lodged interest. 
 		
 	]]
-	DebugWatch("pathing queue length",#self.pathing_queue)
+	-- DebugWatch("pathing queue length",#self.pathing_queue)
 	if(#self.pathing_queue>0) then 
 		self:pathing_tick(dt)
 	end
@@ -364,13 +395,19 @@ end
 
 ]]
  function AVF_ai:pathing_tick(dt)
+ 	if(_AI_DEBUG_PATHING) then 
+ 		DebugWatch("PATHING QUEUE LENGTH",#self.pathing_queue)
+ 	end
  	local active_ai = self.pathing_queue[1]
  	if(active_ai.alive) then
  		local body_parts = self:get_entity_body_parts(active_ai)
  		local ai_priority = active_ai.pathing_priorities[active_ai.current_priority] 
  		local start_pos = GetVehicleTransform(active_ai.id).pos
  		local end_pos = ai_priority.target_location
-	 	local path_found = handle_path_plotting(start_pos,end_pos,dt,active_ai,body_parts)
+ 		local dist_offset = math.random(10,15)
+ 		local end_pos_offset = VecScale(VecNormalize(VecSub(end_pos,start_pos)),dist_offset)
+ 		end_pos = VecSub(end_pos,end_pos_offset)
+	 	local path_found,path_error = handle_path_plotting(start_pos,end_pos,dt,active_ai,body_parts)
 	 	-- DebugWatch("launching pathing for ai to ",end_pos)
 	 	-- DebugWatch("launching pathing for ai from ",start_pos)
 	 	if(path_found) then 
@@ -378,6 +415,10 @@ end
 	 		active_ai.pathing.current_path = deepcopy(path_found)
 	 		active_ai.pathing.active = false
 	 		active_ai.pathing.has_path = true
+	 		self:pop_queue()	
+	 	elseif(path_error) then
+	 		active_ai.pathing.active = false
+	 		active_ai.pathing.has_path = true 
 	 		self:pop_queue()
 	 	end
 
@@ -438,7 +479,7 @@ end
 	 	-- 	self:highlight_target(ai,ai.behaviors.target)
 	 	-- end
 		 
-	 	if(ai.behaviors.target ) then 
+	 	if(ai.behaviors.target and ai.behaviors.target.alive) then 
 			self:weaponAiming(ai)
 		
 		else
@@ -530,6 +571,7 @@ function AVF_ai:manage_priorities(ai)
 	self:get_attack_priority(ai,ai.pathing_priorities[3])
 	self:get_defend_priority(ai,ai.pathing_priorities[4])
 	self:get_follow_priority(ai,ai.pathing_priorities[5])
+	self:get_neutral_priority(ai,ai.pathing_priorities[7])
 	for i =1, #ai.pathing_priorities do 
 		if(ai.pathing_priorities[i].score>ai.current_priority_score ) then 
 			ai.current_priority_score  = ai.pathing_priorities[i].score
@@ -538,9 +580,25 @@ function AVF_ai:manage_priorities(ai)
 
 	end
 
-	if(ai.current_priority>0 and not ai.pathing.active) then
-		self:push_queue(ai)
-		ai.pathing.active = true
+	if(DEBUG_AI_PRIORITIES)then 
+		for i =1, #ai.pathing_priorities do
+			DebugWatch(ai.pathing_priorities[i].name .." priority",ai.pathing_priorities[i].score)
+		end
+		-- DebugWatch("capture priority",ai.pathing_priorities[2].score)
+		-- DebugWatch("attack priority",ai.pathing_priorities[3].score)
+		-- DebugWatch("defend priority",ai.pathing_priorities[4].score)
+		-- DebugWatch("get_follow priority",ai.pathing_priorities[5].score)
+		-- DebugWatch("neutral priority",ai.pathing_priorities[7].score)
+		DebugWatch("current priority",ai.pathing_priorities[ai.current_priority].name)
+		DebugWatch("current target_location",ai.pathing_priorities[ai.current_priority].target_location)
+	end
+	if(not ai.pathing.active) then
+		if(ai.pathing_priorities[ai.current_priority].name ~= "neutral")then
+			ai.pathing.active = true
+			self:push_queue(ai)
+		end		
+	-- else
+	-- 	ai.pathing.active = false
 	end 
 	-- DebugWatch("ai "..ai.id.."priority name",ai.pathing_priorities[ai.current_priority].name)
 	-- DebugWatch("ai priority score",ai.current_priority_score)
@@ -568,7 +626,6 @@ end
 
 
 function AVF_ai:get_capture_priority(ai,priority)
-	capture_points = FindTriggers("avf_conquest_point",true)
 	local vehicle_pos = Transform(self:get_entity_main_centre(ai)) 
 	local target_point = nil
 	local last_target = priority.target
@@ -609,7 +666,126 @@ function AVF_ai:get_capture_priority(ai,priority)
 			-- DebugWatch("target_side "..i,ai.side)
 			-- DebugWatch("capture_point "..i.." info test_case_1.1: score",distance_score)
 			if(capture_points[i] == last_target) then 
-				distance_score =distance_score * 10
+				distance_score =distance_score * 1.16
+			end
+			if(distance_score>target_score) then 
+				target_point = capture_point_pos
+				target_score = distance_score
+				-- DebugPrint("target_score "..distance_value)
+				priority.target_location = capture_point_pos
+				priority.score = target_score
+				priority.target = capture_points[i]
+			end
+		end
+
+	end
+	if(target_point == nil) then 
+				priority.target_location = -1
+				priority.score = -1
+	end
+end
+
+--[[
+			[3] = {
+					name = "attack",
+					actionable = false, 
+					score = -1,
+					target = 0,
+					target_type = "",
+					target_location = {0,0,0},
+					origin = {},
+					action_desc = "move to attack a vehicle",
+			},
+		behaviors = {
+			state = "safe",
+			last_spotted = 0,
+			spotted_memory = 1.5,
+			target = nil,
+			target_pos = nil,
+		},
+
+		]]
+function AVF_ai:get_attack_priority(ai,priority)
+	-- DebugWatch("last spotted",ai.behaviors.last_spotted)
+	local vehicle_pos = Transform(self:get_entity_main_centre(ai))
+	if(ai.behaviors.target_pos) then
+		-- DebugWatch("target alive",ai.behaviors.target.alive)
+		local vehicle_pos = Transform(self:get_entity_main_centre(ai)) 
+		local distance_value = 9999
+		local target_pos = VecCopy(ai.behaviors.target_pos)
+		local target_point = ai.behaviors.target_pos.pos
+		local distance_max = 400
+		local distance_score = 0
+		local target_engagement_range = 10 + (math.random() *ai.behaviors.target_engagement_range)
+		
+		local known_target_modifer = 1
+		if(not ai.behaviors.target) then 
+			known_target_modifer = 0.2
+		end
+
+		local fwdPos = VecSub(vehicle_pos.pos,target_pos.pos)
+		local engagement_spacing = VecScale(VecNormalize(fwdPos),target_engagement_range*known_target_modifer)
+		local engagement_pos =  VecAdd(target_pos.pos,engagement_spacing)
+
+
+		distance_value = VecLength(TransformToLocalPoint(vehicle_pos , target_point))
+
+		distance_score = (1-((distance_value/distance_max)*priority.preference)) * priority.impulse
+		priority.target_location = engagement_pos
+		priority.score = distance_score*known_target_modifer
+		priority.target =  ai.behaviors.target
+	 
+	else
+		priority.target_location = vehicle_pos.pos
+		priority.score = -1
+		
+	end
+
+end
+
+
+function AVF_ai:get_defend_priority(ai,priority)
+	local vehicle_pos = Transform(self:get_entity_main_centre(ai)) 
+	local target_point = nil
+	local last_target = priority.target
+	-- ideal target value is closest to 1
+	local target_score = 0--9999
+	local point_pos = nil
+	local distance_value = 9999
+	local distance_max = 400
+	local distance_score = 0
+	--[[
+			calculate capture points and their distance to ai.
+	]]
+	local capture_side = -1
+	local capture_state = "false"
+	for i=1, #capture_points do 
+
+		capture_side  = tonumber(GetTagValue(capture_points[i],"capture_side"))
+		capture_state  = GetTagValue(capture_points[i],"captured")  == "true"
+			
+		-- check if point not captured, and if it is then side is not the current side
+		if(capture_side>=0 and  ((capture_state and capture_side==ai.side)) or capture_side==ai.side) then 
+				
+			-- DebugWatch("capture_point "..i.." info test_case_01",capture_side>=0 )
+
+			-- DebugWatch("capture_point "..i.." info test_case_02",capture_side ~= ai.side)
+				
+			-- DebugWatch("capture_point "..i.." info test_case_03",(capture_state and capture_side==ai.side))
+			
+
+			capture_point_pos = GetTriggerTransform(capture_points[i]).pos
+			distance_value = VecLength(TransformToLocalPoint(vehicle_pos , capture_point_pos))
+
+			-- DebugWatch("capture_point "..i.." info test_case_0.1: ai post",vehicle_pos)
+			-- DebugWatch("capture_point "..i.." info test_case_0.2: distance_value",distance_value)
+			-- DebugWatch("capture_point "..i.." info test_case_0.3: capture_point_pos",capture_point_pos)
+			distance_score = (1-((distance_value/distance_max)*priority.preference)) * priority.impulse
+			-- DebugWatch("target_dist  "..i,distance_value)
+			-- DebugWatch("target_side "..i,ai.side)
+			-- DebugWatch("capture_point "..i.." info test_case_1.1: score",distance_score)
+			if(capture_points[i] == last_target) then 
+				distance_score =distance_score * 1.05
 			end
 			if(distance_score>target_score) then 
 				target_point = capture_point_pos
@@ -629,62 +805,18 @@ function AVF_ai:get_capture_priority(ai,priority)
 end
 
 
-function AVF_ai:get_attack_priority(ai)
-	return -1
-
-end
-
-
-function AVF_ai:get_defend_priority(ai)
--- 	capture_points = FindTriggers("avf_conquest_point",true)
--- 	local vehicle_pos = self:get_entity_main_centre(ai) 
--- 	local target_point = nil
--- 	local target_score = 9999
--- 	local point_pos = nil
--- 	local distance_value = 9999
--- 	--[[
--- 			calculate capture points and their distance to ai.
--- 	]]
--- 	local capture_side = -1
--- 	local capture_state = "false"
--- 	for i=1, #capture_points do 
-
--- 		capture_side  = tonumber(GetTagValue(capture_points[i],"capture_side"))
--- 		capture_state  = GetTagValue(capture_points[i],"captured")  == "true"
--- 		DebugWatch("target_state"..i,capture_state)
-			
-
--- 		if(capture_side>=0  capture_side == ai.side and capture_state) then 
--- 			capture_point_pos = GetTriggerTransform(capture_points[i]).pos
--- 			distance_value = VecLength(TransformToLocalPoint(vehicle_pos , capture_point_pos))
-			
--- 			DebugWatch("target_score "..i,distance_value)
--- 			DebugWatch("target_score "..i,ai.side)
-			
--- 			if(distance_value<target_score) then 
--- 				target_point = capture_point_pos
--- 				target_score = distance_value
--- 				DebugPrint("target_score "..distance_value)
--- 				priority.target_location = capture_point_pos
--- 				priority.score = target_score
--- 			end
--- 		end
--- 	end
-
--- end
-
-		-- if(capture_side>=0 and capture_side ~= ai.side and capture_state) then 
-
-	return -1
-
-end
-
-
 function AVF_ai:get_follow_priority(ai)
 	return -1
 
 end
 
+function AVF_ai:get_neutral_priority(ai,priority)
+
+	local vehicle_pos = Transform(self:get_entity_main_centre(ai)) 
+	priority.target_location = vehicle_pos.pos
+	priority.score = 0.001
+	priority.target = vehicle_pos
+end
 
 --[[
 
@@ -727,10 +859,11 @@ end
 
 
 function AVF_ai:control_vehicle(ai)
+	local look_ahead_coef = 10
 	local current_path = ai.pathing.current_path
 	local pathfinding_look_ahead = 3 / AVF_PATHFINDING_STEP
 	local vel = VecLength(GetBodyVelocity(GetVehicleBody(ai.id)))
-	pathfinding_look_ahead = math.max(1,pathfinding_look_ahead * (vel/3))
+	pathfinding_look_ahead = math.min(math.max(1,pathfinding_look_ahead * (vel/3)),6)
 	-- local path_step =2
 	-- local avoidance_size = 3
 	-- local max_steer = 3
@@ -785,10 +918,12 @@ end
  function AVF_ai:find_target(ai)
 
 
- 	local target = self:targetSelection(ai)
-
-
+ 	local target,target_pos = self:targetSelection(ai)
+ 	 
  	ai.behaviors.target = target
+ 	if(target) then
+	 	ai.behaviors.target_pos = self:getPos(target)
+	 end
  end
 
 
@@ -802,6 +937,7 @@ function AVF_ai:targetSelection(ai)
 	end
 	
 	local closestTarget = nil
+	local closestTargetPos = nil
 	local closestDistance = assumed_target_dist
 	for side = 1,#self.sides do 
 		if(ai.side~=side) then 
@@ -821,6 +957,7 @@ function AVF_ai:targetSelection(ai)
 						if(hit_target and dist <closestDistance) then 
 							closestTarget = other_ai
 							closestDistance = dist
+							closestTargetPos = target_pos
 						end
 					end
 				end
@@ -832,18 +969,21 @@ function AVF_ai:targetSelection(ai)
 	end
 	-- DebugWatch("side: ",ai.side)
 	if(closestTarget~=nil) then
-
+		if(GetVehicleHealth(closestTarget.id)<0.35 or not  closestTarget.alive) then 
+			self:target_not_spotted(ai)
+		end
 		-- DebugWatch("AVF_ai "..ai.id,closestTarget.id)
 	else 
 		-- DebugWatch("AVF_ai "..ai.id,"no target")
 	end
-	return closestTarget
+	return closestTarget,closestTargetPos
 end
 
 function AVF_ai:target_not_spotted(ai)
-	ai.behaviors.last_spotted = ai.behaviors.last_spotted + GetTimeStep()
-	if(ai.behaviors.last_spotted > ai.behaviors.spotted_memory) then 
+	ai.behaviors.last_spotted = ai.behaviors.last_spotted - GetTimeStep()
+	if(ai.behaviors.last_spotted <= 0) then --ai.behaviors.spotted_memory) then 
 		ai.behaviors.target = nil
+		-- ai.behaviors.target_pos= nil
 	end 
 end
 
@@ -940,7 +1080,7 @@ function AVF_ai:weaponAiming(ai)
 				
 		-- 	end
 		-- end
-
+		ai.behaviors.target_pos = targetPos
 		self:gunAiming(ai,targetPos,target_vel,fwdPos,true)
 	end
 	return hitVehicle
@@ -964,7 +1104,7 @@ function AVF_ai:gunAiming(ai,targetPos,target_vel,fwdPos,in_combat)
 				local predicted_target_pos =  TransformCopy(targetPos)
 				predicted_target_pos.pos = VecAdd(predicted_target_pos.pos,VecScale(target_vel,time_to_impact*(math.random(75,200)/100))) 
 				if(gun.base_turret) then 
-					self:turretRotatation(ai,gun.base_turret,gun.turretJoint,predicted_target_pos)
+					self:turretRotatation(ai,gun.base_turret,gun.turretJoint,predicted_target_pos,gun)
 				end
 				targetPos.pos[2] = targetPos.pos[2]+ target_dist_modifier
 				if(DEBUG_AI) then
@@ -976,13 +1116,14 @@ function AVF_ai:gunAiming(ai,targetPos,target_vel,fwdPos,in_combat)
 					if(not gun.aimed and (previouslyAimed or (gun.persistance and gun.persistance>0))) then 
 						gun.persistance = gun.persistance - GetTimeStep()
 					end
-					
-				 	if(gun.persistance>0) then 
-				 		self:gunFiring(gun)
-				 	elseif(gun.firing) then
-				 		self:gunFiring(gun)
-				 		gun.firing = false
-				 	end
+					if(gun.aimed or previouslyAimed) then  
+					 	if(gun.persistance>0) then 
+					 		self:gunFiring(gun)
+					 	elseif(gun.firing) then
+					 		self:gunFiring(gun)
+					 		gun.firing = false
+					 	end
+					end
 				end
 
 
@@ -1063,7 +1204,15 @@ function AVF_ai:gunLaying(ai,gun,targetPos)
 	-- bias = bias * math.random(-1,1)/5
 
 	local rotation_force = GetBodyMass(GetShapeBody(gun.id))
-	SetJointMotor(gun.gunJoint, dir*bias,rotation_force)
+
+
+	local min, max = GetJointLimits(gun.gunJoint)
+	local current = GetJointMovement(gun.gunJoint)
+	gun.commander_view_y = clamp(0,1,(gun.commander_view_y + (gun.commander_y_rate*GetTimeStep() * -dir)))
+	local target_y = gun.commander_view_y * (max - min) + min
+	SetJointMotorTarget(gun.gunJoint, target_y, gun.elevationRate)
+	-- local rotation_force = GetBodyMass(GetShapeBody(gun.id))
+	-- SetJointMotor(gun.gunJoint, dir*bias,rotation_force)
 	
 end
 
@@ -1149,17 +1298,16 @@ end
 
 
 
-function AVF_ai:turretRotatation(ai,turret,turretJoint,targetPos)
+function AVF_ai:turretRotatation(ai,turret,turretJoint,targetPos,gun)
 
 	if(turret)then 
 
-		local turret = turret.id
-		local forward = self:turretAngle(0,1,0,turret,targetPos)
-		local back 	  = self:turretAngle(0,-1,0,turret,targetPos) 
-		local left 	  = self:turretAngle(-1,0,0,turret,targetPos)
-		local right   = self:turretAngle(1,0,0,turret,targetPos)
-		local up 	  = self:turretAngle(0,0,1,turret,targetPos)
-		local down 	  = self:turretAngle(0,0,-1,turret,targetPos)
+		local forward = self:turretAngle(0,1,0,turret.id,targetPos)
+		local back 	  = self:turretAngle(0,-1,0,turret.id,targetPos) 
+		local left 	  = self:turretAngle(-1,0,0,turret.id,targetPos)
+		local right   = self:turretAngle(1,0,0,turret.id,targetPos)
+		local up 	  = self:turretAngle(0,0,1,turret.id,targetPos)
+		local down 	  = self:turretAngle(0,0,-1,turret.id,targetPos)
 
 		-- DebugWatch("angles",
 		-- 	"forward: "..
@@ -1176,13 +1324,24 @@ function AVF_ai:turretRotatation(ai,turret,turretJoint,targetPos)
 		-- 	down)		
 		local bias = 0.05 * ai.precision
 
-		local rotation_force = GetBodyMass(GetShapeBody(turret))
+		local rotation_force = GetBodyMass(GetShapeBody(turret.id))*1.3
+		-- local rotation_force = GetBodyMass(GetShapeBody(turret))
 		bias = bias * math.random(-1,1)
 		if(forward<(1-bias)) then
-			if(left>right+bias) then
-				SetJointMotor(turretJoint, 0.1+1*left,rotation_force)
-			elseif(right>left+bias) then
-				SetJointMotor(turretJoint, -.1+(-1*right),rotation_force)
+
+
+			local target_move = left-right
+			if(math.abs(target_move)>bias) then
+				SetJointMotor(
+					turretJoint, 
+					gun.turret_rotation_rate* clamp(-1,1,target_move+ 0.1 * utils.sign(target_move)),
+					rotation_force)
+				
+
+			-- if(left>right+bias) then
+			-- 	SetJointMotor(turretJoint, 0.1+1*left,rotation_force)
+			-- elseif(right>left+bias) then
+			-- 	SetJointMotor(turretJoint, -.1+(-1*right),rotation_force)
 			else
 				SetJointMotor(turretJoint, 0,rotation_force)
 			end

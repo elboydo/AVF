@@ -185,7 +185,7 @@ function explosionController:explosionSparks(count, vel)
 		ParticleRadius(0.03, 0.0, "easein")
 		ParticleColor(1, 0.4, 0.3)
 		ParticleTile(4)
-		SpawnParticle(explosionPos, v, life)
+		SpawnParticle(self.explosionPos, v, life)
 	end
 end
 

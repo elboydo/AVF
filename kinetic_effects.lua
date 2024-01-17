@@ -15,12 +15,13 @@ function fire(gun,barrelCoords,intel_payload)
 	-- end
     if(gun.mouseDownSound and getPlayerMouseDown())then
     	if(not gun.loopSoundFile)then 
-			PlaySound(gun.mouseDownSound, barrelCoords.pos, 50, false)
+			-- PlaySound(gun.mouseDownSound, barrelCoords.pos, 50, false)
+			play_gun_sound(gun.mouseDownSound,barrelCoords.pos,50, gun.custom_mouse_down,gun,"mouseDownSound")
 		end
     elseif(not gun.tailOffSound or not getPlayerMouseDown())then
-    	PlaySound(gun.sound, barrelCoords.pos, 50, false)
+    	-- PlaySound(gun.sound, barrelCoords.pos, 50, false)
     	-- PlaySound(explosion_sounds[math.random(1,#explosion_sounds)],barrelCoords.pos, 400, false)
-		
+		play_gun_sound(gun.sound,barrelCoords.pos,50, gun.custom_fire_sound,gun,"sound")
     end
 
 
@@ -627,7 +628,7 @@ function pushProjectile(cannonLoc,gun,intel_payload)
 								GetVehicleBody(vehicle.id)),GetTimeStep()))	
 	---
 				-- local predictedBulletVelocity = VecScale(direction,velocity)
-	DebugLine(point1,TransformToParentPoint(cannonLoc, Vec(0,-100,0)),1,0,0)
+	-- DebugLine(point1,TransformToParentPoint(cannonLoc, Vec(0,-100,0)),1,0,0)
 	projectileHandler.shells[projectileHandler.shellNum] = deepcopy(projectileHandler.defaultShell)
 
 	loadedShell 				= projectileHandler.shells[projectileHandler.shellNum] 

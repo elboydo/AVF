@@ -563,6 +563,9 @@ function AVF_AI_ACS:initVehicle(ai)
 
 	self.scanning.maxScanLength = self.scanning.maxScanLength * (math.random(90,350)/100) 
 
+
+	self.reversingController.currentReverseTime = math.random()*self.reversingController.reverseTime
+
 	-- DebugPrint("[INFO] "..ai.id.." ACS setup complete")
 
 end
@@ -649,7 +652,7 @@ function AVF_AI_ACS:controlActions(dt,ai)
 			self.reversingController.currentReverseTime = self.reversingController.currentReverseTime - GetTimeStep()
 		else
 			self.reversingController.reversing = false
-			self.reversingController.currentReverseTime = self.reversingController.reverseTime
+			self.reversingController.currentReverseTime = math.random()*self.reversingController.reverseTime
 			self.reversingController.currentWait = self.reversingController.waitTime
 		end
 		
