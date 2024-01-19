@@ -9,6 +9,7 @@
 #include "vehicle_setup.lua"
 #include "AVF_UI.lua"
 #include "commander/team_allocater.lua"
+#include "commander/AVF_TAK.lua"
 #include kinetic_effects.lua
 
 #include "audio_effects.lua"
@@ -1000,10 +1001,33 @@ function tick(dt)
 	-- if(AVF_Vehicle_Used and (InputPressed("esc") or InputDown("esc") or InputReleased("esc"))) then
 	-- 	SetInt("options.gfx.fov",originalFov)
 	-- end
+
+
+	if(DEBUG_CODE) then 
+		-- local status,retVal = pcall(guidance_tick,dt)
+		-- if status then 
+		-- 	-- utils.printStr("no errors")
+		-- else
+		-- 	DebugWatch("[GUIDANCE TICK ERROR]",retVal)--frameErrorMessages = frameErrorMessages..retVal.."\n"
+		-- end
+
+		local status,retVal = pcall(tool_ticks,dt)
+		if status then 
+			-- utils.printStr("no errors")
+		else
+			DebugWatch("[GAMEPLAY TICK ERROR]",retVal)--frameErrorMessages = frameErrorMessages..retVal.."\n"
+		end	
+	else
+		tool_ticks(dt)
+	end
+
+
+end
+
+function tool_ticks(dt)
+	if unexpected_condition then error() end
+	AVF_TAK_TICK(dt)
 	team_allocator_tick()
-	AVF_TAK_TICK()
-
-
 end
 
 function gameplayTicks( dt )

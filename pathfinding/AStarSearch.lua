@@ -246,7 +246,7 @@ function AStar:AStarSearch_2(graph)
 
             if(type(current)~="table" or not current) then 
                 return -1
-            elseif  (GetTime() - start_time >5) then 
+            elseif  (GetTime() - start_time >1) then 
                 goal_found = true
             elseif (current:Equals(goal)) then
                 -- DebugPrint("goal found")

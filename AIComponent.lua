@@ -101,6 +101,9 @@ AVF_ai = {
 		info = nil, 
 		features = nil, 
 		side = nil,
+		NEW_TAK_COMMAND = nil,
+		NEW_COMMAND_TIMER = 0,
+		NEW_COMMAND_TIMER_MAX = 0.5,
 		range = 100,
 		precision = 1,
 		persistance = 0.3,
@@ -571,7 +574,9 @@ function AVF_ai:manage_priorities(ai)
 	self:get_attack_priority(ai,ai.pathing_priorities[3])
 	self:get_defend_priority(ai,ai.pathing_priorities[4])
 	self:get_follow_priority(ai,ai.pathing_priorities[5])
+	self:get_command_priority(ai,ai.pathing_priorities[6])
 	self:get_neutral_priority(ai,ai.pathing_priorities[7])
+
 	for i =1, #ai.pathing_priorities do 
 		if(ai.pathing_priorities[i].score>ai.current_priority_score ) then 
 			ai.current_priority_score  = ai.pathing_priorities[i].score
@@ -805,6 +810,22 @@ function AVF_ai:get_defend_priority(ai,priority)
 end
 
 
+function AVF_ai:get_command_priority(ai,priority)
+	local new_command,move_target,attack_target = databus:retrieve_tak_commands(ai)
+	priority.target_location = move_target
+	ai.NEW_TAK_COMMAND = new_command
+	if(new_command) then 
+		ai.NEW_COMMAND_TIMER = ai.NEW_COMMAND_TIMER_MAX 
+	end
+	if(move_target) then 
+		priority.score = 100
+	else
+		priority.score=-1
+	end
+	priority.target = attack_target	
+end
+
+
 function AVF_ai:get_follow_priority(ai)
 	return -1
 
@@ -848,6 +869,18 @@ function AVF_ai:navigate_pathing(ai)
 		if(ai.pathing.current_path ~=nil and  #ai.pathing.current_path>0) then 
 			if(_AI_DEBUG_PATHING)then 
 				drawPath(ai.pathing.current_path)
+			end
+			if(ai.NEW_COMMAND_TIMER and ai.NEW_COMMAND_TIMER>0 and ai.new_path_found) then  
+				-- DebugWatch("new tak command",ai.NEW_TAK_COMMAND)
+				drawPath(ai.pathing.current_path)
+
+				ai.NEW_COMMAND_TIMER =ai.NEW_COMMAND_TIMER -GetTimeStep()
+				if(ai.NEW_COMMAND_TIMER<=0) then 
+					ai.NEW_TAK_COMMAND = false
+					ai.new_path_found = false
+				end
+			elseif(ai.new_path_found) then 
+				 ai.new_path_found = false
 			end
 			self:control_vehicle(ai)
 		end

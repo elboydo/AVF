@@ -242,6 +242,7 @@ function handle_path_plotting(startPos,goalPos,dt,ai,vehicle_body_parts)
 			path = perform_pathfinding() 
 			if(path) then 
 				path = adjust_pathing(path, ai,vehicle_body_parts)
+				ai.new_path_found = true
 			end
 			return path, false
 		elseif(pathing_state == "ERROR" or pathing_state == "EXPIRED") then 
@@ -318,7 +319,7 @@ end
 
 --This function will draw the content of lastPath as a line
 function drawPath(lastPath)
-	DebugWatch("last path length",#lastPath)
+	-- DebugWatch("last path length",#lastPath)
 	for i=1, #lastPath-1 do
 		DrawLine(lastPath[i], lastPath[i+1])
 		DebugCross(lastPath[i],1,0,0)

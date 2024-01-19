@@ -61,8 +61,8 @@ end
 
 
 
-function draw()
-
+function draw(dt)
+	AVF_TAK_DRAW(dt)
 	if AVF_DEV_HUD_VISIBLE then
 		SHOW_AVF_DEV_HUD()
 	end
